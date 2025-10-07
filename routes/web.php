@@ -57,5 +57,8 @@ Route::delete('/group_members/{member}', [GroupMemberController::class, 'destroy
 
 use App\Http\Controllers\Client\ClientController;
 Route::resource('clients', ClientController::class);
+use App\Http\Controllers\Group\GroupCenterController;
+
+Route::resource('group_centers', GroupCenterController::class);
 
 

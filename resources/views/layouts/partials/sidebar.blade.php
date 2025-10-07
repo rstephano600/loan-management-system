@@ -69,6 +69,10 @@
             <i class="bi bi-people"></i>
             <span>Groups</span>
         </a>
+        <a href="{{ route('group_centers.index') }}" class="nav-link {{ Request::is('group_centers*') ? 'active' : '' }}">
+            <i class="bi bi-people"></i>
+            <span>Groups Center</span>
+        </a>
         <a href="{{ route('clients.index') }}" class="nav-link {{ Request::is('clients*') ? 'active' : '' }}">
             <i class="bi bi-people"></i>
             <span>Clients</span>
