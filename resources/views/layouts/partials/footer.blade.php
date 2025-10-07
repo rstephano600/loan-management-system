@@ -1,0 +1,32 @@
+
+<!-- ================================================================ -->
+<!-- FILE: resources/views/layouts/partials/footer.blade.php -->
+<!-- ================================================================ -->
+<footer class="bg-light border-top py-3 mt-auto">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <small class="text-muted">
+                    &copy; {{ date('Y') }} Mfumo wa Mikopo - Haki Zote Zimehifadhiwa
+                </small>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <small class="text-muted">
+                    Mtumiaji: <strong>{{ Auth::user()->username }}</strong> | 
+                    Cheo: <strong>{{ ucfirst(str_replace('_', ' ', Auth::user()->role)) }}</strong> |
+                    Hali: <span class="badge bg-success">{{ ucfirst(Auth::user()->status) }}</span>
+                </small>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col text-center">
+                <small class="text-muted">
+                    Toleo: 1.0.0 | 
+                    <a href="" class="text-decoration-none">Msaada</a> | 
+                    <a href="" class="text-decoration-none">Sera ya Faragha</a> | 
+                    <a href="" class="text-decoration-none">Masharti</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</footer>
