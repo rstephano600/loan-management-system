@@ -39,7 +39,19 @@ class Client extends Model
         'blacklist_reason',
         'assigned_loan_officer_id',
         'kyc_completed',
-        'kyc_completed_at'
+        'kyc_completed_at',
+
+        // NEW FIELDS BELOW
+        'group_center_id',
+        'national_id',
+        'gender',
+        'marital_status',
+        'spouse_name',
+        'other_name',
+        'date_of_birth',
+        'is_street_leader',
+        'profile_picture', 
+        'sign_image', 
     ];
 
     // Relationships
@@ -57,4 +69,9 @@ class Client extends Model
     {
         return $this->hasMany(ClientFinancialInfo::class, 'client_id');
     }
+    public function guarantor()
+{
+    return $this->hasOne(ClientGuarantor::class, 'client_id');
+}
+
 }

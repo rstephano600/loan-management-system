@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\LogActivity;
 
 
 class AuthenticationController extends Controller
@@ -42,6 +43,8 @@ class AuthenticationController extends Controller
             // Redirect to dashboard
             return redirect()->route('dashboard')->with('success', 'Welcome back!');
         }
+
+
 
         return back()->withErrors([
             'login' => 'Invalid credentials. Please try again.',

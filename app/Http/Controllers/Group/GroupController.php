@@ -7,6 +7,7 @@ use App\Models\Group;
 use App\Models\Employee;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Helpers\LogActivity;
 
 class GroupController extends Controller
 {

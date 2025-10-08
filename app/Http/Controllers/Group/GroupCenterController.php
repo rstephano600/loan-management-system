@@ -8,6 +8,7 @@ use App\Models\Group;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Helpers\LogActivity;
 
 class GroupCenterController extends Controller
 {

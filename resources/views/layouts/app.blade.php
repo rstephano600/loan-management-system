@@ -163,6 +163,20 @@
         .badge-client { background-color: #d35400; }
         .badge-user { background-color: #7f8c8d; }
     </style>
+
+    <style>
+         #flash-message-container {
+           position: fixed;
+           top: 20px;
+           right: 20px;
+           z-index: 1050; 
+           max-width: 350px; 
+           transition: opacity 0.5s ease-in-out;
+        }
+        #flash-message-container .alert {
+            margin-bottom: 10px; 
+        }
+</style>
     
     @stack('styles')
 </head>
@@ -187,21 +201,21 @@
                     </nav>
                 @endif
 
-                <!-- Flash Messages -->
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-                
-                @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
+                 <div id="flash-message-container">
+                     @if(session('success'))
+                         <div class="alert alert-success alert-dismissible fade show" role="alert">
+                             <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                         </div>
+                     @endif
+    
+                     @if(session('error'))
+                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                             <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                         </div>
+                     @endif
+                 </div>
                 <!-- Page Content -->
                 @yield('content')
             </div>
@@ -260,6 +274,27 @@
             });
         });
     </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+
+    const alerts = document.querySelectorAll('#flash-message-container .alert');
+
+    alerts.forEach(alertElement => {
+        setTimeout(() => {
+            if (alertElement) {
+                const closeButton = alertElement.querySelector('.btn-close');
+                if (closeButton) {
+                    closeButton.click();
+                } else {
+                    var bsAlert = new bootstrap.Alert(alertElement);
+                    bsAlert.close();
+                }
+            }
+        }, 5000);
+    });
+});
+</script>
     
     @stack('scripts')
 </body>

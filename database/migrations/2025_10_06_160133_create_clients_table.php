@@ -13,7 +13,7 @@ return new class extends Migration {
             
             // Basic Info
             $table->enum('client_type', [
-                'individual', 'sole_proprietor', 'partnership', 'llc', 'corporation'
+                'individual', 'sole_proprietor', 'business', 'partnership', 'llc', 'corporation'
             ]);
 
             // Business Info
