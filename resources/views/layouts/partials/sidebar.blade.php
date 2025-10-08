@@ -78,17 +78,17 @@
             <span>Clients</span>
         </a>
 
-        <a href="{{ route('loan_payments.index') }}" class="nav-link {{ Request::is('loan_payments*') ? 'active' : '' }}">
-            <i class="bi bi-money"></i>
-            <span>Loans Payments</span>
-        </a>
-        <a href="{{ route('loans.index') }}" class="nav-link {{ Request::is('loans*') ? 'active' : '' }}">
+        <a href="{{ route('client_loans.index') }}" class="nav-link {{ Request::is('client_loans*') ? 'active' : '' }}">
             <i class="bi bi-money"></i>
             <span>Client Loans</span>
         </a>
-        <a href="{{ route('loan_categories.index') }}" class="nav-link {{ Request::is('loan_categories*') ? 'active' : '' }}">
+        <a href="{{ route('loans_dashboard.dashboard') }}" class="nav-link {{ Request::is('loans_dashboard*') ? 'active' : '' }}">
             <i class="bi bi-money"></i>
-            <span>Loan Categories</span>
+            <span>Loans Dashboard</span>
+        </a>
+        <a href="{{ route('daily_collections.index') }}" class="nav-link {{ Request::is('daily_collections*') ? 'active' : '' }}">
+            <i class="bi bi-money"></i>
+            <span>Daily Collections</span>
         </a>
 
         <a href="{{ route('profile.show') }}" class="nav-link {{ Request::is('profile*') ? 'active' : '' }}">
@@ -97,16 +97,21 @@
         </a>
 
         <a href="" class="nav-link {{ Request::is('support*') ? 'active' : '' }}">
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" 
-                                                class="dropdown-item d-flex align-items-center">
-                                            <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                        </button>
-                        </form>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" 
+                    class="dropdown-item d-flex align-items-center">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
+            </form>
 </a>
 
 <!-- 
+
+        <a href="{{ route('loan_payments.index') }}" class="nav-link {{ Request::is('loan_payments*') ? 'active' : '' }}">
+            <i class="bi bi-money"></i>
+            <span>Loans Payments</span>
+        </a>
 
         @if($canManageClients)
         <a href="" class="nav-link {{ Request::is('clientss*') ? 'active' : '' }}">

@@ -76,7 +76,6 @@ use App\Http\Controllers\Group\GroupCenterController;
 Route::resource('group_centers', GroupCenterController::class);
 
 
-
 use App\Http\Controllers\Loan\LoanCategoryController;
 use App\Http\Controllers\Loan\LoanPaymentController;
 
@@ -99,6 +98,37 @@ Route::middleware(['auth'])->group(function () {
     Route::post('employees/export/csv', [EmployeeExportController::class, 'exportCsv'])
         ->name('employees.export.csv');
 });
+
+
+
+use App\Http\Controllers\Loan\ClientLoanController;
+Route::resource('client_loans', ClientLoanController::class);
+Route::post('client_loans/{clientLoan}/close', [ClientLoanController::class, 'closeLoan'])->name('client_loans.close');
+
+use App\Http\Controllers\Loan\LoanApprovalController;
+
+Route::prefix('loans')->group(function () {
+    Route::get('/{clientLoan}/approve', [LoanApprovalController::class, 'edit'])->name('loans.approve.edit');
+    Route::put('/{clientLoan}/approve', [LoanApprovalController::class, 'update'])->name('loans.approve.update');
+});
+use App\Http\Controllers\Loan\DailyCollectionController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('daily_collections', DailyCollectionController::class);
+});
+// Add these routes to your web.php file
+
+use App\Http\Controllers\Loan\LoanDashboardController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/loansAnalysis/dashboard', [LoanDashboardController::class, 'index'])->name('loans_dashboard.dashboard');
+    Route::get('/loansAnalysis/export', [LoanDashboardController::class, 'export'])->name('loans_export');
+    Route::get('/loans/export/excel', [LoanDashboardController::class, 'exportExcel'])->name('loans.export.excel');
+    Route::get('/loans/export/pdf', [LoanDashboardController::class, 'exportPdf'])->name('loans.export.pdf');
+});
+// Add these routes to your routes/web.php file
+
+
 // use App\Http\Controllers\Loan\LoanCategoryController;
 
 // Route::post('loan-categories/{loan_category}/toggle-status', [LoanCategoryController::class, 'toggleStatus'])

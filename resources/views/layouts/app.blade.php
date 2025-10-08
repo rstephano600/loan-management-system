@@ -227,6 +227,12 @@
 
     <!-- Bootstrap JavaScript -->
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+    <!-- Bootstrap JS -->
+<script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+
+<!-- Select2 JS -->
+<script src="{{ asset('assets/js/select2.min.js') }}"></script>
+
     
     <script>
         // Toggle Sidebar
