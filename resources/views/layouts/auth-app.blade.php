@@ -8,19 +8,19 @@
    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link rel="icon" href="{{ asset('images/arbifA.png') }}" type="image/png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Bootstrap CSS -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
 
-<!-- Font Awesome -->
+    <!-- Font Awesome -->
     <link href="{{ asset('assets/css/all.min.css') }}" rel="stylesheet">
 
-<!-- Select2 CSS -->
+     <!-- Select2 CSS -->
      <link href="{{ asset('assets/css/select2.min.css') }}" rel="stylesheet">
 
-<!-- Your custom CSS if needed -->
+     <!-- Your custom CSS if needed -->
      <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet">
     <style>
         body {

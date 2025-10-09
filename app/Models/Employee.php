@@ -59,6 +59,7 @@ class Employee extends Model
         return $this->hasMany(Referee::class);
     }
 
+
     // Helper: Full Name
     public function getFullNameAttribute()
     {
@@ -73,6 +74,16 @@ class Employee extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function groupCenters()
+    {
+        return $this->hasMany(GroupCenter::class, 'loan_officer_id');
+    }
+
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'loan_officer_id');
     }
 
 

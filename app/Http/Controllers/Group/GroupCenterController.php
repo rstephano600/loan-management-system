@@ -34,11 +34,11 @@ public function index(Request $request)
     }
 
     if ($status) {
-        $query->where('status', $status);
+        $query->where('is_active', $status);
     }
 
     if ($groupId) {
-        $query->where('group_id', $groupId);
+        $query->where('created_at', $groupId);
     }
 
     $centers = $query->orderBy('id', 'desc')->paginate(10);
@@ -56,10 +56,9 @@ public function index(Request $request)
      */
     public function create()
     {
-        $groups = Group::where('is_active', true)->get();
         $employees = Employee::where('is_active', true)->get();
 
-        return view('in.groups.group_centers.create', compact('groups', 'employees'));
+        return view('in.groups.group_centers.create', compact( 'employees'));
     }
 
     /**
@@ -68,7 +67,6 @@ public function index(Request $request)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'group_id' => 'required|exists:groups,id',
             'center_name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
             'area' => 'nullable|string|max:255',
@@ -78,8 +76,8 @@ public function index(Request $request)
         ]);
 
         // Generate a unique center code based on group and date
-        $group = Group::find($validated['group_id']);
-        $validated['center_code'] = strtoupper('CTR-' . Str::slug($group->group_name, '-') . '-' . now()->format('Ymd') . '-' . rand(100, 999));
+        $center_name = $validated['center_name'];
+        $validated['center_code'] = strtoupper('CTR-' . Str::slug($center_name, '-') . '-' . now()->format('Ymd') . '-' . rand(100, 999));
 
         $validated['created_by'] = auth()->id() ?? 1;
         $validated['is_active'] = true;
@@ -92,21 +90,24 @@ public function index(Request $request)
     /**
      * Display the specified resource.
      */
-    public function show(GroupCenter $groupCenter)
-    {
-        $groupCenter->load(['group', 'collectionOfficer']);
-        return view('in.groups.group_centers.show', compact('groupCenter'));
-    }
+public function show(GroupCenter $groupCenter)
+{
+    $groupCenter->load([
+        'collectionOfficer',
+        'groups.loanOfficer',
+    ]);
+
+    return view('in.groups.group_centers.show', compact('groupCenter'));
+}
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(GroupCenter $groupCenter)
     {
-        $groups = Group::where('is_active', true)->get();
         $employees = Employee::where('is_active', true)->get();
-
-        return view('in.groups.group_centers.edit', compact('groupCenter', 'groups', 'employees'));
+        return view('in.groups.group_centers.edit', compact('groupCenter', 'employees'));
     }
 
     /**
@@ -115,7 +116,6 @@ public function index(Request $request)
     public function update(Request $request, GroupCenter $groupCenter)
     {
         $validated = $request->validate([
-            'group_id' => 'required|exists:groups,id',
             'center_name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
             'area' => 'nullable|string|max:255',

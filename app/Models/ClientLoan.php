@@ -99,6 +99,11 @@ class ClientLoan extends Model
     {
         return $this->hasMany(DailyCollection::class, 'client_loan_id');
     }
+    public function photos()
+{
+    return $this->hasMany(ClientLoanPhoto::class);
+}
+
 
     // Accessors for virtual columns
     public function getTotalPayableAttribute()

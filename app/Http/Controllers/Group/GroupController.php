@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Group;
 
 use App\Http\Controllers\Controller;
+use App\Models\GroupCenter;
 use App\Models\Group;
 use App\Models\Employee;
 use Illuminate\Support\Str;
@@ -34,8 +35,9 @@ class GroupController extends Controller
      */
     public function create()
     {
+        $groupCenters = GroupCenter::where('is_active', 1)->get();
         $creditOfficers = Employee::where('position', 'Loan Officer')->get();
-        return view('in.groups.create', compact('creditOfficers'));
+        return view('in.groups.create', compact('creditOfficers', 'groupCenters'));
     }
 
     /**
@@ -44,6 +46,7 @@ class GroupController extends Controller
 public function store(Request $request)
 {
     $validated = $request->validate([
+        'group_center_id' => 'required|exists:group_centers,id',
         'group_name' => 'required|string|max:255',
         'group_type' => 'nullable|string|max:255',
         'location' => 'nullable|string|max:255',
@@ -77,18 +80,22 @@ public function store(Request $request)
     /**
      * Display the specified group.
      */
-    public function show(Group $group)
-    {
-        return view('in.groups.show', compact('group'));
-    }
+public function show(Group $group)
+{
+    // Eager load clients to avoid N+1 queries
+    $group->load('clients');
+
+    return view('in.groups.show', compact('group'));
+}
 
     /**
      * Show the form for editing the specified group.
      */
     public function edit(Group $group)
     {
+        $groupCenters = GroupCenter::where('is_active', 1)->get();
         $creditOfficers = Employee::where('position', 'Loan Officer')->get();
-        return view('in.groups.edit', compact('group', 'creditOfficers'));
+        return view('in.groups.edit', compact('group', 'creditOfficers', 'groupCenters'));
     }
 
     /**
@@ -97,7 +104,7 @@ public function store(Request $request)
     public function update(Request $request, Group $group)
     {
         $validated = $request->validate([
-            'group_code' => 'required|unique:groups,group_code,' . $group->id,
+            'group_center_id' => 'required|exists:group_centers,id',
             'group_name' => 'required|string|max:255',
             'group_type' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',

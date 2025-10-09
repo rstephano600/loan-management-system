@@ -14,6 +14,7 @@ return new class extends Migration
             // Relationship to groups
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
 
+            
             // Center Details
             $table->string('center_code')->unique();
             $table->string('center_name');

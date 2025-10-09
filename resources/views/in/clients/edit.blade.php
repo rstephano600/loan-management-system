@@ -3,7 +3,7 @@
 @section('page-title', 'A client')
 
 @section('content')
-<div class="container mt-4">
+<div class="container-fluid">
     <h3>Edit Client</h3>
 
     <form action="{{ route('clients.update', $client->id) }}" method="POST">
@@ -12,8 +12,11 @@
 
         @include('in.clients.form', ['mode' => 'edit'])
 
+        <div class="text-end mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">Update Client Information</button>
+        </div>
+        
         <div class="mt-3">
-            <button class="btn btn-primary">Update Client</button>
             <a href="{{ route('clients.index') }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>

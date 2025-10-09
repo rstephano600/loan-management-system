@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('client_loans', function (Blueprint $table) {
               $table->id();
-              $table->foreignId('client_id')->constrained()->onDelete('cascade');
-              $table->foreignId('group_center_id')->nullable()->constrained('group_centers')->onDelete('cascade');
+            //   identification details for client
+              $table->integer('group_id')->nullable();
+              $table->integer('client_id')->nullable();
+              $table->integer('group_center_id')->nullable();
 
               // Loan Details
               $table->string('loan_number')->unique();
@@ -24,12 +26,26 @@ return new class extends Migration
 
               // approval
               $table->decimal('amount_disbursed', 15, 2)->default(0);
+              $table->decimal('membership_fee', 15, 2)->nullable()->default(0);
+              $table->decimal('insurance_fee', 15, 2)->nullable()->default(0);
+              $table->decimal('officer_visit_fee', 15, 2)->nullable()->default(0);
               $table->decimal('loan_fee', 15, 2)->default(0);
               $table->decimal('other_fee', 15, 2)->default(0);
               $table->decimal('interest_rate', 5, 2)->default(0);
               $table->decimal('interest_amount', 15, 2)->default(0);
               $table->decimal('total_payable', 15, 2)->virtualAs('amount_disbursed + interest_amount + other_fee + loan_fee');
 
+            //   payment frequency
+              $table->integer('principal_days_due')->nullable();
+              $table->integer('principal_week_due')->nullable();
+              $table->integer('principal_months_due')->nullable();
+              $table->integer('principal_years_due')->nullable();
+
+            //   interest due frequency
+              $table->integer('principal_due')->nullable();
+              $table->decimal('interest_due', 15, 2)->default(0);
+              $table->decimal('fees_due', 15, 2)->default(0);
+              $table->decimal('total_due', 15, 2)->virtualAs();
               // repayment
               $table->decimal('amount_paid', 15, 2)->default(0);
               $table->decimal('outstanding_balance', 15, 2)->default(0);

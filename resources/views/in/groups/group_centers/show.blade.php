@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <div class="card shadow-lg border-start border-primary border-4">
+    <div class="card shadow-lg border-start ">
         <div class="card-header bg-light py-3">
             <h5 class="mb-0 text-primary">General Information</h5>
         </div>
@@ -32,11 +32,6 @@
                 <div class="col-md-6 col-lg-4">
                     <p class="mb-0"><strong>Center Code:</strong></p>
                     <p class="h6 text-dark">{{ $groupCenter->center_code }}</p>
-                </div>
-                
-                <div class="col-md-6 col-lg-4">
-                    <p class="mb-0"><strong>Group Affiliated:</strong></p>
-                    <p class="h6 text-dark">{{ $groupCenter->group->group_name ?? '—' }}</p>
                 </div>
                 
                 <div class="col-md-6 col-lg-4">
@@ -52,7 +47,7 @@
                 <div class="col-md-6 col-lg-4">
                     <p class="mb-0"><strong>Status:</strong></p>
                     <p class="h6 mb-0">
-                        <span class="badge bg-{{ $groupCenter->status == 'active' ? 'success' : 'danger' }} fs-6">
+                        <span class="badge bg-{{ $groupCenter->is_active == 1 ? 'success' : 'danger' }} fs-6">
                             {{ ucfirst($groupCenter->status) }}
                         </span>
                     </p>
@@ -68,9 +63,35 @@
             </div>
         </div>
     </div>
+
+    <div class="card shadow-lg border-start ">
+        <div class="card-header bg-light py-3">
+                <h5>Groups under {{ $groupCenter->center_name }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+
+@if($groupCenter->groups->isEmpty())
+    <p>No groups assigned to this center.</p>
+@else
+    <ul class="list-group">
+        @foreach($groupCenter->groups as $group)
+            <li class="list-group-item">
+                <strong>{{ $group->group_name }}</strong>
+                <br>
+                Loan Officer: 
+                {{ $group->loanOfficer->first_name ?? 'Unassigned' }}
+                {{ $group->loanOfficer->last_name ?? '' }}
+            </li>
+        @endforeach
+    </ul>
+@endif
+    </div>
+</div>
+</div>
     
     {{-- Placeholder for Group Center Members or Meetings Schedule --}}
-    <div class="mt-4">
+    <!-- <div class="mt-4">
         <div class="card shadow-sm">
             <div class="card-header bg-secondary text-white py-3">
                 <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i> Related Data (e.g., Meeting Schedule)</h5>
@@ -79,6 +100,6 @@
                 <p class="text-muted mb-0">Data structure for members or meeting schedule can be added here.</p>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 @endsection

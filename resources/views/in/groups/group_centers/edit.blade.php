@@ -44,19 +44,6 @@
                                value="{{ old('center_name', $groupCenter->center_name) }}" required placeholder="e.g., Central Plaza Meeting Point">
                         @error('center_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    
-                    {{-- Group Selection --}}
-                    <div class="col-md-6">
-                        <label for="group_id" class="form-label fw-bold">Affiliated Group <span class="text-danger">*</span></label>
-                        <select name="group_id" id="group_id" class="form-select @error('group_id') is-invalid @enderror" required>
-                            @foreach($groups as $group)
-                                <option value="{{ $group->id }}" {{ old('group_id', $groupCenter->group_id) == $group->id ? 'selected' : '' }}>
-                                    {{ $group->group_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('group_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
 
                     {{-- Collection Officer --}}
                     <div class="col-md-6">

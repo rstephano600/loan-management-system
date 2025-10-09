@@ -10,7 +10,6 @@ class GroupCenter extends Model
     use HasFactory;
 
     protected $fillable = [
-        'group_id',
         'center_code',
         'center_name',
         'location',
@@ -32,6 +31,17 @@ class GroupCenter extends Model
     public function group()
     {
         return $this->belongsTo(Group::class);
+    }
+
+    public function loanOfficer()
+    {
+        return $this->belongsTo(Employee::class, 'loan_officer_id');
+    }
+
+    // Has many groups
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'group_center_id');
     }
 
     public function collectionOfficer()

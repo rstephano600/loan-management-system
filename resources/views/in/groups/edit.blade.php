@@ -29,13 +29,31 @@
                 
                 <div class="row g-4">
                     
-                    {{-- Group Code (Usually fixed, hence read-only styling is often preferred) --}}
-                    <div class="col-md-6">
-                        <label for="group_code" class="form-label fw-bold">Group Code <span class="text-danger">*</span></label>
-                        <input type="text" name="group_code" id="group_code" class="form-control @error('group_code') is-invalid @enderror" 
-                               value="{{ old('group_code', $group->group_code) }}" required placeholder="e.g., GRP-001">
-                        @error('group_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
+ <div class="col-md-6">
+    <label for="group_center_id" class="form-label">Select Group Center</label>
+    <select class="form-select" name="group_center_id" id="group_center_id" required>
+        <option value="">Select Group Center</option>
+        @foreach($groupCenters as $groupCenter)
+            <option value="{{ $groupCenter->id }}"
+                {{ old('group_center_id', $group->group_center_id) == $groupCenter->id ? 'selected' : '' }}>
+                {{ $groupCenter->center_name }}
+            </option>
+        @endforeach
+    </select>
+</div>
+
+<div class="col-md-6">
+    <label for="credit_officer_id" class="form-label">Select Credit Officer</label>
+    <select class="form-select" name="credit_officer_id" id="credit_officer_id" required>
+        <option value="">Select Credit Officer</option>
+        @foreach($creditOfficers as $creditOfficer)
+            <option value="{{ $creditOfficer->id }}"
+                {{ old('credit_officer_id', $group->credit_officer_id) == $creditOfficer->id ? 'selected' : '' }}>
+                {{ $creditOfficer->first_name }} {{ $creditOfficer->last_name }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
                     {{-- Group Name --}}
                     <div class="col-md-6">

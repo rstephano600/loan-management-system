@@ -27,9 +27,6 @@
 </style>
 
 <div class="container-fluid py-4">
-    {{-- ================================================================= --}}
-    {{-- HEADER & ACTIONS BAR --}}
-    {{-- ================================================================= --}}
     <div class="d-flex justify-content-between align-items-center mb-4 no-print">
         <h2 class="h3 mb-0 text-dark">
             <i class="bi bi-people-fill text-primary me-2"></i> Group: <span class="text-primary">{{ $group->group_name }}</span>
@@ -50,34 +47,29 @@
         </div>
     </div>
 
-    <div class="row">
-        
-        {{-- ================================================================= --}}
-        {{-- GROUP DETAILS CARD --}}
-        {{-- ================================================================= --}}
-        <div class="col-lg-5 col-md-12 mb-4">
-            <div class="card shadow-sm h-100 border-start border-primary border-4">
-                <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i> General Group Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
+    <div class="card shadow-lg border-start ">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0 text-primary">General Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                    <div class="col-md-6 col-lg-4">
+                    <p class="mb-0"><strong>Group Code:</strong></p>
                             <strong>Group Code:</strong> <span class="fw-bold text-dark">{{ $group->group_code }}</span>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-4">
                             <strong>Group Type:</strong> {{ $group->group_type ?? '—' }}
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-4">
                             <strong>Credit Officer:</strong> {{ $group->creditOfficer->first_name ?? '—' }}
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-4">
                             <strong>Registration Date:</strong> {{ $group->registration_date ?? '—' }}
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6 col-lg-4">
                             <strong>Location:</strong> {{ $group->location ?? '—' }}
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6 col-lg-4">
                             <strong>Status:</strong>
                             @if($group->is_active)
                                 <span class="badge bg-success fs-6">Active</span>
@@ -85,71 +77,67 @@
                                 <span class="badge bg-danger fs-6">Inactive</span>
                             @endif
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6 col-lg-4">
                             <strong>Description:</strong> 
                             <p class="text-muted mt-2 mb-0">{{ $group->description ?? 'No description provided.' }}</p>
                         </div>
-                    </div>
-                </div>
             </div>
-        </div>
-
-        {{-- ================================================================= --}}
-        {{-- GROUP MEMBERS CARD --}}
-        {{-- ================================================================= --}}
-        <div class="col-lg-7 col-md-12 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-secondary text-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i> Group Members ({{ $group->members->count() }})</h5>
-                    <a href="{{ route('group_members.create', $group->id) }}" class="btn btn-sm btn-light">
-                        <i class="bi bi-plus-circle me-1"></i> Add Member
-                    </a>
-                </div>
-                <div class="card-body p-0">
-                    @if($group->members->count())
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Member Code</th>
-                                        <th>Full Name</th>
-                                        <th>Role</th>
-                                        <th class="no-print">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($group->members as $member)
-                                        <tr>
-                                            <td><span class="fw-medium">{{ $member->member_code }}</span></td>
-                                            <td>{{ $member->employee->first_name }} {{ $member->employee->last_name }}</td>
-                                            <td><span class="badge bg-info-subtle text-dark">{{ $member->role_in_group ?? 'General Member' }}</span></td>
-                                            <td class="no-print">
-                                                <form action="{{ route('group_members.destroy', $member->id) }}" method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Are you sure you want to remove this member?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Member">
-                                                        <i class="bi bi-x-circle"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="p-4 text-center text-muted">
-                            <i class="bi bi-person-slash fs-4 d-block mb-2"></i>
-                            No members have been assigned to this group yet.
-                        </div>
-                    @endif
-                </div>
                 
-            </div>
         </div>
     </div>
-    
+<br>
+
+<div class="card shadow-lg border-start">
+    <div class="card-header bg-light py-3">
+        <h5 class="mb-0 text-primary">Clients Belonging to {{ $group->group_name }}</h5>
+    </div>
+    <div class="card-body">
+        @if($group->clients->isEmpty())
+            <p class="text-muted">No clients assigned to this group.</p>
+        @else
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Client Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Country</th>
+                            <th>Status</th>
+                            <th>KYC Completed</th>
+                            <th>Registered At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($group->clients as $index => $client)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $client->first_name }} {{ $client->last_name }}</td>
+                                <td>{{ $client->email ?? '—' }}</td>
+                                <td>{{ $client->phone ?? '—' }}</td>
+                                <td>{{ $client->country ?? '—' }}</td>
+                                <td>
+                                    @if($client->status === 'active')
+                                        <span class="badge bg-success">Active</span>
+                                    @elseif($client->status === 'inactive')
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    @else
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    @endif
+                                </td>
+                                <td>{{ $client->kyc_completed_at ? $client->kyc_completed_at->format('Y-m-d') : 'Not Completed' }}</td>
+                                <td>{{ $client->created_at->format('Y-m-d') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
+
+
 </div>
 
 <script>

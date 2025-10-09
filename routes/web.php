@@ -116,6 +116,8 @@ use App\Http\Controllers\Loan\DailyCollectionController;
 Route::middleware(['auth'])->group(function () {
     Route::resource('daily_collections', DailyCollectionController::class);
 });
+Route::resource('client-loan-photos', App\Http\Controllers\Loan\ClientLoanPhotoController::class);
+
 // Add these routes to your web.php file
 
 use App\Http\Controllers\Loan\LoanDashboardController;

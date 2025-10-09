@@ -9,6 +9,7 @@
     <title>@yield('title') - ArBif DBMS</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="{{ asset('images/arbifA.png') }}" type="image/png">
     <!-- Bootstrap CSS -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
     <!-- Font Awesome -->

@@ -27,6 +27,28 @@
                 @csrf
                 <div class="row g-4">
                     
+            <div class="col-md-6">
+            <label for="group_center_id" class="form-label">Select Group Center</label>
+            <select class="form-select" name="group_center_id" id="group_center_id" required>
+                <option value="">Select Group Center</option>
+                @foreach($groupCenters as $groupCenter)
+                    <option value="{{ $groupCenter->id }}">
+                        {{ $groupCenter->center_name }}
+                    </option>
+                @endforeach
+            </select>
+              </div>
+            <div class="col-md-6">
+            <label for="credit_officer_id" class="form-label">Select Group Center</label>
+            <select class="form-select" name="credit_officer_id" id="credit_officer_id" required>
+                <option value="">Select Credit officer</option>
+                @foreach($creditOfficers as $creditOfficer)
+                    <option value="{{ $creditOfficer->id }}">
+                        {{ $creditOfficer->first_name }} {{ $creditOfficer->last_name }}
+                    </option>
+                @endforeach
+            </select>
+              </div>
                     {{-- Group Name --}}
                     <div class="col-md-6">
                         <label for="group_name" class="form-label fw-bold">Group Name <span class="text-danger">*</span></label>

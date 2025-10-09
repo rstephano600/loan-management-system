@@ -65,14 +65,15 @@
             <i class="bi bi-person-lines-fill"></i>
             <span>Employees</span>
         </a>
-        <a href="{{ route('groups.index') }}" class="nav-link {{ Request::is('groups*') ? 'active' : '' }}">
-            <i class="bi bi-people"></i>
-            <span>Groups</span>
-        </a>
         <a href="{{ route('group_centers.index') }}" class="nav-link {{ Request::is('group_centers*') ? 'active' : '' }}">
             <i class="bi bi-people"></i>
             <span>Groups Center</span>
         </a>
+        <a href="{{ route('groups.index') }}" class="nav-link {{ Request::is('groups*') ? 'active' : '' }}">
+            <i class="bi bi-people"></i>
+            <span>Groups</span>
+        </a>
+
         <a href="{{ route('clients.index') }}" class="nav-link {{ Request::is('clients*') ? 'active' : '' }}">
             <i class="bi bi-people"></i>
             <span>Clients</span>
@@ -81,6 +82,10 @@
         <a href="{{ route('client_loans.index') }}" class="nav-link {{ Request::is('client_loans*') ? 'active' : '' }}">
             <i class="bi bi-money"></i>
             <span>Client Loans</span>
+        </a>
+        <a href="{{ route('client-loan-photos.index') }}" class="nav-link {{ Request::is('client-loan-photos*') ? 'active' : '' }}">
+            <i class="bi bi-photo"></i>
+            <span>Client loan photos</span>
         </a>
         <a href="{{ route('loans_dashboard.dashboard') }}" class="nav-link {{ Request::is('loans_dashboard*') ? 'active' : '' }}">
             <i class="bi bi-money"></i>

@@ -10,19 +10,6 @@
         </div>
         <div class="card-body">
 
-            {{-- Validation Errors --}}
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Whoops!</strong> Please check the fields below for errors.
-                    <ul class="mb-0 mt-2">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
             <form action="{{ route('group_centers.store') }}" method="POST">
                 @csrf
 
@@ -34,20 +21,6 @@
                         <input type="text" name="center_name" id="center_name" class="form-control @error('center_name') is-invalid @enderror" 
                                value="{{ old('center_name') }}" required placeholder="e.g., Central Plaza Meeting Point">
                         @error('center_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    
-                    {{-- Group Selection --}}
-                    <div class="col-md-6">
-                        <label for="group_id" class="form-label fw-bold">Affiliated Group <span class="text-danger">*</span></label>
-                        <select name="group_id" id="group_id" class="form-select @error('group_id') is-invalid @enderror" required>
-                            <option value="">-- Select Group --</option>
-                            @foreach($groups as $group)
-                                <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
-                                    {{ $group->group_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('group_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     {{-- Location --}}

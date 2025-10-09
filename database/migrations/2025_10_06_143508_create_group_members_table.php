@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('group_members', function (Blueprint $table) {
             $table->id();
+            
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
             $table->string('member_code')->unique();
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->timestamps();
     });
 }
+
 
     /**
      * Reverse the migrations.

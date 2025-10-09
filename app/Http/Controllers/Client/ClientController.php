@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\User;
 use App\Models\GroupCenter;
+use App\Models\Group;
 use App\Helpers\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -58,7 +59,7 @@ class ClientController extends Controller
     public function create()
     {
         $loanOfficers = User::where('role', 'loanofficer')->get();
-        $centres = GroupCenter::where('is_active', true)->get();
+        $centres = Group::where('is_active', true)->get();
         return view('in.clients.create', compact('loanOfficers', 'centres'));
     }
 
@@ -68,13 +69,18 @@ class ClientController extends Controller
  public function store(Request $request)
 {
     $validated = $request->validate([
-        'group_center_id' => 'nullable|exists:group_centers,id',
+        'group_id' => 'nullable|exists:groups,id',
         'client_type' => 'required|string|max:255',
         'business_name' => 'nullable|string|max:255',
+        'business_capital'=> 'nullable|numeric|min:0',
+        'business_income'=> 'nullable|numeric|min:0',
+        'business_location'=> 'nullable|string|max:255',
+        'partner_in_business'=> 'nullable|string|max:255',
         'business_registration_number' => 'nullable|string|max:255',
         'tax_identification_number' => 'nullable|string|max:255',
         'industry_sector' => 'nullable|string|max:255',
         'years_in_business' => 'nullable|integer|min:0',
+        'months_in_business' => 'nullable|integer|min:0',
         'number_of_employees' => 'nullable|integer|min:0',
         'first_name' => 'required|string|max:255',
         'middle_name' => 'nullable|string|max:255',
@@ -131,7 +137,7 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
         $loanOfficers = User::where('role', 'loanofficer')->get();
-        $centres = GroupCenter::where('is_active', true)->get();
+        $centres = Group::where('is_active', true)->get();
         return view('in.clients.edit', compact('client', 'loanOfficers','centres'));
     }
 
@@ -141,13 +147,18 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $validated = $request->validate([
-            'group_center_id' => 'nullable|exists:group_centers,id',
+            'group_id' => 'nullable|exists:groups,id',
             'client_type' => 'required|string|max:255',
             'business_name' => 'nullable|string|max:255',
+            'business_capital'=> 'nullable|numeric|min:0',
+            'business_income'=> 'nullable|numeric|min:0',
+            'business_location'=> 'nullable|string|max:255',
+            'partner_in_business'=> 'nullable|string|max:255',
             'business_registration_number' => 'nullable|string|max:255',
             'tax_identification_number' => 'nullable|string|max:255',
             'industry_sector' => 'nullable|string|max:255',
             'years_in_business' => 'nullable|integer|min:0',
+            'months_in_business' => 'nullable|integer|min:0',
             'number_of_employees' => 'nullable|integer|min:0',
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
@@ -162,15 +173,15 @@ class ClientController extends Controller
             'postal_code' => 'nullable|string|max:20',
             'country' => 'nullable|string|max:100',
 
-        'national_id' => 'nullable|string|max:255',
-        'gender' => 'nullable|in:male,female,other',
-        'marital_status' => 'nullable|in:single,married,divorced,widowed',
-        'spouse_name' => 'nullable|string|max:255',
-        'other_name' => 'nullable|string|max:255',
-        'date_of_birth' => 'nullable|date',
-        'is_street_leader' => 'nullable|boolean',
-        'profile_picture' => 'nullable|string', 
-        'sign_image' => 'nullable|string', 
+            'national_id' => 'nullable|string|max:255',
+            'gender' => 'nullable|in:male,female,other',
+            'marital_status' => 'nullable|in:single,married,divorced,widowed',
+            'spouse_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'date_of_birth' => 'nullable|date',
+            'is_street_leader' => 'nullable|boolean',
+            'profile_picture' => 'nullable|string', 
+            'sign_image' => 'nullable|string', 
             'credit_score' => 'nullable|numeric|min:0|max:1000',
             'credit_rating' => 'nullable|string|max:50',
             'risk_category' => 'nullable|string|max:50',

@@ -20,19 +20,12 @@
         <div class="col-md-3">
             <select name="status" class="form-select">
                 <option value="">All Status</option>
-                <option value="active" {{ request('status')=='active'?'selected':'' }}>Active</option>
-                <option value="inactive" {{ request('status')=='inactive'?'selected':'' }}>Inactive</option>
+                <option value="1" {{ request('status')==1?'selected':'' }}>Active</option>
+                <option value="1" {{ request('status')==0?'selected':'' }}>Inactive</option>
             </select>
         </div>
         <div class="col-md-3">
-            <select name="group_id" class="form-select">
-                <option value="">Filter by Group</option>
-                @foreach($groups as $group)
-                    <option value="{{ $group->id }}" {{ request('group_id')==$group->id?'selected':'' }}>
-                        {{ $group->group_name }}
-                    </option>
-                @endforeach
-            </select>
+            <input type="date" name="group_id" id="" class="form-control">
         </div>
         <div class="col-md-2 d-grid">
             <button type="submit" class="btn btn-outline-secondary">Filter</button>
@@ -47,7 +40,6 @@
                     <th>#</th>
                     <th>Center Code</th>
                     <th>Center Name</th>
-                    <th>Group</th>
                     <th>Location</th>
                     <th>Officer</th>
                     <th>Status</th>
@@ -60,11 +52,10 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $center->center_code }}</td>
                         <td>{{ $center->center_name }}</td>
-                        <td>{{ $center->group->group_name ?? '—' }}</td>
                         <td>{{ $center->location }}</td>
                         <td>{{ $center->collection_officer->first_name ?? '' }} {{ $center->collection_officer->last_name ?? '' }}</td>
                         <td>
-                            <span class="badge bg-{{ $center->status == 'active' ? 'success' : 'secondary' }}">
+                            <span class="badge bg-{{ $center->is_active == 1 ? 'success' : 'secondary' }}">
                                 {{ ucfirst($center->status) }}
                             </span>
                         </td>

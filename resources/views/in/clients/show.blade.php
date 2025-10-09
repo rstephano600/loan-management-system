@@ -146,8 +146,8 @@
                         Client Profile
                     </h2>
                     <p class="text-muted mb-0">
-                        {{ $client->first_name }} {{ $client->last_name }} • 
-                        <span class="badge bg-light text-dark">ID: {{ $client->id }}</span>
+                        {{ $client->first_name }} {{ $client->last_name }}
+                        <span class="badge bg-light text-dark">Assigned Loan officer: {{ $client->assignedLoanOfficer->first_name }}</span>
                     </p>
                 </div>
                 
@@ -169,23 +169,11 @@
         </div>
     </div>
 
-    <!-- Flash Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show no-print mb-4">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="text-start mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">Apply for Loan</button>
         </div>
-    @endif
-    
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show no-print mb-4">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
 
+    <!-- Flash Messages -->
     <div class="row g-4">
         
         <!-- Column 1: Identity & Contact -->
@@ -325,12 +313,14 @@
                 </div>
                 <div class="card-body">
                     <div class="section-title">Personal Details</div>
-                    <div class="info-item">
-                        <span class="info-label">Group Center:</span>
-                        <div class="info-value">
-                            <span class="badge bg-primary">{{ $client->groupCenter->center_name ?? 'Not Assigned' }}</span>
-                        </div>
-                    </div>
+                 <div class="info-item">
+                     <span class="info-label">Group Belongs:</span>
+                     <div class="info-value">
+                         <span class="badge bg-primary">
+                             {{ $client->group->group_name ?? 'Not Assigned' }}
+                         </span>
+                     </div>
+                 </div>
                     <div class="info-item">
                         <span class="info-label">Gender:</span>
                         <div class="info-value">{{ ucfirst($client->gender ?? 'N/A') }}</div>
@@ -439,7 +429,7 @@
                     <div class="info-item">
                         <span class="info-label">Loan Officer:</span>
                         <div class="info-value">
-                            {{ $client->assignedLoanOfficer->name ?? 'Unassigned' }}
+                            {{ $client->assignedLoanOfficer->first_name ?? 'Unassigned' }} {{ $client->assignedLoanOfficer->last_name ?? 'Unassigned' }}
                         </div>
                     </div>
                 </div>
