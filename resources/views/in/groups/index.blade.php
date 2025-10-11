@@ -84,7 +84,7 @@
                             <td class="fw-bold">{{ $group->group_code }}</td>
                             <td>{{ $group->group_name }}</td>
                             <td><span class="badge bg-secondary-subtle text-dark">{{ $group->group_type ?? '—' }}</span></td>
-                            <td>{{ $group->creditOfficer->first_name ?? '—' }}</td>
+                            <td>{{ $group->creditOfficer->first_name ?? '—' }} {{ $group->creditOfficer->last_name ?? '—' }}</td>
                             <td>{{ $group->registration_date ? \Carbon\Carbon::parse($group->registration_date)->format('Y-m-d') : '—' }}</td>
                             <td class="text-center">
                                 @if($group->is_active)

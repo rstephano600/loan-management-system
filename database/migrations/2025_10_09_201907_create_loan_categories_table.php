@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('amount_disbursed', 15, 2);
             $table->decimal('insurance_fee', 15, 2)->nullable()->default(0);
             $table->decimal('officer_visit_fee', 15, 2)->nullable()->default(0);
-            $table->integer('interest_rate', 5, 2)->nullable()->default(20);
+            $table->decimal('interest_rate', 5, 2)->nullable()->default(20);
             $table->decimal('interest_amount', 5, 2)->nullable()->default(0);
             $table->enum('repayment_frequency', ['daily', 'weekly', 'bi_weekly', 'monthly', 'quarterly'])->default('daily');
             $table->integer('max_term_days')->nullable();

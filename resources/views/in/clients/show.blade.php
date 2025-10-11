@@ -147,7 +147,7 @@
                     </h2>
                     <p class="text-muted mb-0">
                         {{ $client->first_name }} {{ $client->last_name }}
-                        <span class="badge bg-light text-dark">Assigned Loan officer: {{ $client->assignedLoanOfficer->first_name }}</span>
+                        <span class="badge bg-light text-dark">Assigned Loan officer: {{ $client->assignedLoanOfficer->username ?? 'N/A' }}</span>
                     </p>
                 </div>
                 

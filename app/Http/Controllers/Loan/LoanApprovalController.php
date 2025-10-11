@@ -1,49 +1,99 @@
 <?php
 
 namespace App\Http\Controllers\Loan;
-
-
 use App\Http\Controllers\Controller;
-use App\Models\ClientLoan;
+
+use App\Models\Loan;
+use App\Models\LoanCategory;
+use App\Models\RepaymentSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoanApprovalController extends Controller
 {
     /**
-     * Show the approval form for a specific loan.
+     * Display list of pending loan requests.
      */
-    public function edit(ClientLoan $clientLoan)
+    public function index()
     {
-        return view('in.loans.client_loans.approval.edit', compact('clientLoan'));
+        $loans = Loan::with(['client', 'loanCategory'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('in.loans.requests.loan_approvals.index', compact('loans'));
     }
 
     /**
-     * Handle approval submission.
+     * Show a single pending loan for approval.
      */
-    public function update(Request $request, ClientLoan $clientLoan)
+    public function show($id)
     {
-        $validated = $request->validate([
-            'amount_disbursed' => 'required|numeric|min:0',
-            'loan_fee' => 'nullable|numeric|min:0',
-            'other_fee' => 'nullable|numeric|min:0',
-            'interest_rate' => 'required|numeric|min:0|max:100',
+        $loan = Loan::with(['client', 'loanCategory'])->findOrFail($id);
+
+        if ($loan->status !== 'pending') {
+            return redirect()->route('loan-approvals.index')
+                ->with('error', 'This loan has already been processed.');
+        }
+
+        return view('in.loans.requests.loan_approvals.show', compact('loan'));
+    }
+
+
+    public function approve(Request $request, $id)
+    {
+    $loan = Loan::findOrFail($id);
+    $category = LoanCategory::findOrFail($loan->loan_category_id);
+
+    if ($loan->status !== 'pending') {
+        return redirect()->back()->with('error', 'Loan already approved or processed.');
+    }
+
+    // Step 1: Approve the loan
+    $loan->update([
+        'status'            => 'approved',
+        'approved_by'       => Auth::id(),
+        'disbursement_date' => now(),
+    ]);
+
+    // Step 2: Generate repayment schedule
+
+    $totalDays = $category->total_days_due ?? 0;
+    // $installmentNumber = 'INST' . $client->last_name . strtoupper(Str::random(4)) . '-' . now()->format('YmdHis');
+
+    for ($i = 1; $i <= $totalDays; $i++) {
+        RepaymentSchedule::create([
+            'loan_id'           => $loan->id,
+            'due_day_number'    => $i,
+            'principal_due'     => $category->principal_due ?? 0,
+            'interest_due'      => $category->interest_due ?? 0,
+            'days_left'         => $totalDays - $i,
+            'status'            => 'pending',
+            'created_by'            => Auth::id(),
+        ]);
+    }
+        return redirect()->route('loan-approvals.index')->with('success', 'Loan approved and repayment schedule generated successfully.');
+
+    }
+
+    /**
+     * Reject a loan.
+     */
+    public function reject(Request $request, $id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        if ($loan->status !== 'pending') {
+            return redirect()->back()->with('error', 'Loan already processed.');
+        }
+
+        $loan->update([
+            'status' => 'closed',
+            'closure_reason' => $request->input('reason', 'Rejected by manager'),
+            'approved_by' => Auth::id(),
+            'closed_at' => now(),
         ]);
 
-        // Compute interest amount
-        $interestAmount = ($validated['amount_disbursed'] * $validated['interest_rate']) / 100;
-
-        $clientLoan->update([
-            'amount_disbursed' => $validated['amount_disbursed'],
-            'loan_fee' => $validated['loan_fee'] ?? 0,
-            'other_fee' => $validated['other_fee'] ?? 0,
-            'interest_rate' => $validated['interest_rate'],
-            'interest_amount' => $interestAmount,
-            'status' => 'approved',
-            'updated_by' => Auth::id(),
-        ]);
-
-        return redirect()->route('client_loans.show', $clientLoan->id)
-            ->with('success', 'Loan approved successfully.');
+        return redirect()->route('loan-approvals.index')->with('success', 'Loan request rejected.');
     }
 }

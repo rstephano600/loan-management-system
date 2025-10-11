@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Loan;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\LoanCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
 class LoanCategoryController extends Controller
@@ -17,7 +17,6 @@ class LoanCategoryController extends Controller
     {
         $query = LoanCategory::query();
 
-        // 🔍 Search by name or conditions
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -26,22 +25,18 @@ class LoanCategoryController extends Controller
             });
         }
 
-        // 🎯 Filter by active status
         if ($request->filled('status')) {
             $query->where('is_active', $request->input('status') === 'active');
         }
 
-        // 💱 Filter by currency
         if ($request->filled('currency')) {
             $query->where('currency', $request->input('currency'));
         }
 
-        // 🔁 Filter by repayment frequency
         if ($request->filled('frequency')) {
             $query->where('repayment_frequency', $request->input('frequency'));
         }
 
-        // 📄 Paginate results
         $loanCategories = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('in.loans.loan_categories.index', compact('loanCategories'));
@@ -59,29 +54,59 @@ class LoanCategoryController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'interest_rate' => 'required|numeric|min:0',
-            'max_term_months' => 'required|integer|min:1',
-            'max_term_days' => 'nullable|integer|min:1',
-            'principal_amount' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:10',
-            'min_amount' => 'required|numeric|min:0',
-            'max_amount' => 'required|numeric|gte:min_amount',
-            'repayment_frequency' => 'required|in:daily,weekly,bi_weekly,monthly,quarterly',
-            'installment_amount' => 'required|numeric|min:0',
-            'total_repayable_amount' => 'required|numeric|min:0',
-            'conditions' => 'required|string',
-        ]);
+{
+    $validated = $request->validate([
+        'name' => 'nullable|string|max:255',
+        'amount_disbursed' => 'required|numeric|min:0',
+        'principal_due' => 'required|numeric|min:0',
+        'insurance_fee' => 'nullable|numeric|min:0',
+        'officer_visit_fee' => 'nullable|numeric|min:0',
+        'interest_rate' => 'nullable|numeric|min:0|max:100',
 
-        $validated['created_by'] = Auth::id();
-        $validated['is_active'] = true;
+        'repayment_frequency' => 'required|in:daily,weekly,bi_weekly,monthly,quarterly',
+        'max_term_days' => 'nullable|integer|min:0',
+        'max_term_months' => 'nullable|integer|min:0',
 
-        LoanCategory::create($validated);
+        'currency' => 'nullable|string|max:10',
+        'conditions' => 'nullable|string',
+        'descriptions' => 'nullable|string',
+        'is_active' => 'boolean',
+        'is_new_client' => 'boolean',
+    ]);
 
-        return redirect()->route('loan_categories.index')->with('success', 'Loan category created successfully.');
+    // ✅ Retrieve actual numeric values from the request
+    $amount_disbursed = (float) $request->input('amount_disbursed');
+    $interest_rate = (float) $request->input('interest_rate', 20); // default 20 if null
+    $principal_due = (float) $request->input('principal_due');
+
+    // ✅ Calculate interest and dues safely
+    $interest = ($amount_disbursed * $interest_rate) / 100;
+
+    $repayableAmount = $interest + $amount_disbursed;
+
+    // Avoid division by zero
+    if ($principal_due > 0) {
+        $totalDaysDue = $repayableAmount / $principal_due;
+        $interestDue = ($principal_due * $interest_rate) / 100;
+    } else {
+        $totalDaysDue = 0;
+        $interestDue = 0;
     }
+
+    // ✅ Add calculated values
+    $validated['interest_amount'] = $interest;
+    $validated['total_days_due'] = $totalDaysDue;
+    $validated['interest_due'] = $interestDue;
+    $validated['created_by'] = Auth::id();
+    $validated['is_active'] = $request->boolean('is_active', true);
+    $validated['is_new_client'] = $request->boolean('is_new_client', true);
+
+    LoanCategory::create($validated);
+
+    return redirect()
+        ->route('loan_categories.index')
+        ->with('success', 'Loan category created successfully.');
+}
 
     /**
      * Display the specified resource.
@@ -105,26 +130,54 @@ class LoanCategoryController extends Controller
     public function update(Request $request, LoanCategory $loanCategory)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'interest_rate' => 'required|numeric|min:0',
-            'max_term_months' => 'required|integer|min:1',
-            'max_term_days' => 'nullable|integer|min:1',
-            'principal_amount' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:10',
-            'min_amount' => 'required|numeric|min:0',
-            'max_amount' => 'required|numeric|gte:min_amount',
+            'name' => 'nullable|string|max:255',
+            'amount_disbursed' => 'required|numeric|min:0',
+            'principal_due' => 'required|numeric|min:0',
+            'insurance_fee' => 'nullable|numeric|min:0',
+            'officer_visit_fee' => 'nullable|numeric|min:0',
+            'interest_rate' => 'nullable|numeric|min:0|max:100',
+
             'repayment_frequency' => 'required|in:daily,weekly,bi_weekly,monthly,quarterly',
-            'installment_amount' => 'required|numeric|min:0',
-            'total_repayable_amount' => 'required|numeric|min:0',
-            'conditions' => 'required|string',
+            'max_term_days' => 'nullable|integer|min:0',
+            'max_term_months' => 'nullable|integer|min:0',
+
+            'currency' => 'nullable|string|max:10',
+            'conditions' => 'nullable|string',
+            'descriptions' => 'nullable|string',
             'is_active' => 'boolean',
+            'is_new_client' => 'boolean',
         ]);
 
-        $validated['updated_by'] = Auth::id();
+           // ✅ Retrieve actual numeric values from the request
+    $amount_disbursed = (float) $request->input('amount_disbursed');
+    $interest_rate = (float) $request->input('interest_rate', 20); // default 20 if null
+    $principal_due = (float) $request->input('principal_due');
 
+    // ✅ Calculate interest and dues safely
+    $interest = ($amount_disbursed * $interest_rate) / 100;
+
+    $repayableAmount = $interest + $amount_disbursed;
+
+    // Avoid division by zero
+    if ($principal_due > 0) {
+        $totalDaysDue = $repayableAmount / $principal_due;
+        $interestDue = ($principal_due * $interest_rate) / 100;
+    } else {
+        $totalDaysDue = 0;
+        $interestDue = 0;
+    }
+
+    // ✅ Add calculated values
+    $validated['interest_amount'] = $interest;
+    $validated['total_days_due'] = $totalDaysDue;
+    $validated['interest_due'] = $interestDue;
+    $validated['updated_by'] = Auth::id();
+    
         $loanCategory->update($validated);
 
-        return redirect()->route('loan_categories.index')->with('success', 'Loan category updated successfully.');
+        return redirect()
+            ->route('loan_categories.index')
+            ->with('success', 'Loan category updated successfully.');
     }
 
     /**
@@ -134,7 +187,9 @@ class LoanCategoryController extends Controller
     {
         $loanCategory->delete();
 
-        return redirect()->route('loan_categories.index')->with('success', 'Loan category deleted successfully.');
+        return redirect()
+            ->route('loan_categories.index')
+            ->with('success', 'Loan category deleted successfully.');
     }
 
     /**
@@ -146,6 +201,8 @@ class LoanCategoryController extends Controller
         $loanCategory->updated_by = Auth::id();
         $loanCategory->save();
 
-        return redirect()->route('loan_categories.index')->with('success', 'Loan category status updated.');
+        return redirect()
+            ->route('loan_categories.index')
+            ->with('success', 'Loan category status updated.');
     }
 }

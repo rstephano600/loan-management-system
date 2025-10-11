@@ -11,54 +11,64 @@ class LoanCategory extends Model
 
     protected $table = 'loan_categories';
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'name',
+        'amount_disbursed',
+        'insurance_fee',
+        'officer_visit_fee',
         'interest_rate',
-        'max_term_months',
-        'max_term_days',
-        'principal_amount',
-        'currency',
-        'min_amount',
-        'max_amount',
+        'interest_amount',
         'repayment_frequency',
-        'installment_amount',
-        'total_repayable_amount',
+        'total_days_due',
+        'max_term_days',
+        'max_term_months',
+        'principal_due',
+        'interest_due',
+        'currency',
         'conditions',
+        'descriptions',
         'is_active',
+        'is_new_client',
         'created_by',
         'updated_by',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     */
     protected $casts = [
-        'interest_rate' => 'decimal:2',
-        'principal_amount' => 'decimal:2',
-        'min_amount' => 'decimal:2',
-        'max_amount' => 'decimal:2',
-        'installment_amount' => 'decimal:2',
-        'total_repayable_amount' => 'decimal:2',
+        'amount_disbursed' => 'decimal:2',
+        'insurance_fee' => 'decimal:2',
+        'officer_visit_fee' => 'decimal:2',
+        'interest_amount' => 'decimal:2',
+        'interest_due' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_new_client' => 'boolean',
     ];
 
     /**
-     * Relationships
+     * Accessors for virtual columns (repayable_amount, total_due)
      */
+    protected $appends = ['repayable_amount', 'total_due'];
 
-    // If a LoanCategory is created by a user
-    public function creator()
+    public function getRepayableAmountAttribute()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->amount_disbursed + $this->interest_amount;
     }
 
-    // If a LoanCategory is updated by a user
+    public function getTotalDueAttribute()
+    {
+        return ($this->principal_due ?? 0) + ($this->interest_due ?? 0);
+    }
+
+    /**
+     * Relationships (optional, depending on your setup)
+     */
+    public function creator()
+    {
+        return $this->belongsTo(Employee::class, 'created_by');
+    }
+
     public function updater()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(Employee::class, 'updated_by');
     }
 
     // If LoanCategory has many loans

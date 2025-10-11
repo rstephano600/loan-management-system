@@ -75,6 +75,11 @@ public function group()
     return $this->belongsTo(Group::class, 'group_id');
 }
 
+public function groupCenter()
+{
+    return $this->belongsTo(GroupCenter::class, 'group_center_id');
+}
+
 // app/Models/Client.php
 public function assignedLoanOfficer()
 {

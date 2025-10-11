@@ -4,68 +4,94 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class RepaymentSchedule extends Model
 {
     use HasFactory;
 
+    protected $table = 'repayment_schedules';
+
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = [
         'loan_id',
-        'group_center_id',
         'installment_number',
+        'due_day_number',
         'due_date',
         'principal_due',
         'interest_due',
-        'fees_due',
-        'total_due',
-        'principal_outstanding',
-        'amount_paid',
+        'penalty_due',
         'principal_paid',
         'interest_paid',
-        'fees_paid',
-        'total_paid',
-        'days_late',
-        'status',
+        'penalty_paid',
         'paid_date',
+        'status',
+        'payment_method',
         'created_by',
+        'is_paid',
+        'paid_by',
         'updated_by',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
     protected $casts = [
         'due_date' => 'date',
-        'paid_date' => 'date',
         'principal_due' => 'decimal:2',
         'interest_due' => 'decimal:2',
+        'penalty_due' => 'decimal:2',
+        'principal_paid' => 'decimal:2',
+        'interest_paid' => 'decimal:2',
+        'penalty_paid' => 'decimal:2',
         'total_due' => 'decimal:2',
-        'principal_outstanding' => 'decimal:2',
-        'amount_paid' => 'decimal:2',
-        // ... all other decimal fields
+        'total_paid' => 'decimal:2',
     ];
 
     /**
-     * Get the loan this installment belongs to.
+     * Relationship: A repayment schedule belongs to a loan.
      */
-    public function loan(): BelongsTo
+    public function loan()
     {
-        return $this->belongsTo(Loan::class);
+        return $this->belongsTo(Loan::class, 'loan_id');
+    }
+        public function creator()
+    {
+        return $this->belongsTo(Employee::class, 'created_by');
+    }
+
+    public function payer()
+    {
+        return $this->belongsTo(Employee::class, 'paid_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(Employee::class, 'updated_by');
     }
 
     /**
-     * Get the group center context for this installment.
+     * Accessor: Automatically compute remaining balance.
      */
-    public function groupCenter(): BelongsTo
+    public function getBalanceAttribute()
     {
-        return $this->belongsTo(GroupCenter::class);
+        return ($this->total_due ?? 0) - ($this->total_paid ?? 0);
     }
 
     /**
-     * Get the payments that were applied to this schedule item (Many-to-Many).
+     * Scope: Filter by status.
      */
-    public function payments(): BelongsToMany
+    public function scopeStatus($query, $status)
     {
-        return $this->belongsToMany(Payment::class, 'payment_schedule_allocations', 'repayment_schedule_id', 'payment_id')
-                    ->withPivot(['amount_applied', 'principal_applied', 'interest_applied', 'fees_applied', 'penalty_applied']);
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope: Filter overdue schedules.
+     */
+    public function scopeOverdue($query)
+    {
+        return $query->where('status', 'overdue');
     }
 }

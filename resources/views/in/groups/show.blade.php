@@ -126,7 +126,7 @@
                                         <span class="badge bg-warning text-dark">Pending</span>
                                     @endif
                                 </td>
-                                <td>{{ $client->kyc_completed_at ? $client->kyc_completed_at->format('Y-m-d') : 'Not Completed' }}</td>
+                                <td>{{ $client->kyc_completed_at ? $client->kyc_completed_at : 'Not Completed' }}</td>
                                 <td>{{ $client->created_at->format('Y-m-d') }}</td>
                             </tr>
                         @endforeach

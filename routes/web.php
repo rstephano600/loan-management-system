@@ -78,11 +78,15 @@ Route::resource('group_centers', GroupCenterController::class);
 
 use App\Http\Controllers\Loan\LoanCategoryController;
 use App\Http\Controllers\Loan\LoanPaymentController;
+use App\Http\Controllers\Loan\LoanController;
 
 Route::resource('loan_categories', LoanCategoryController::class);
 Route::patch('loan_categories/{loanCategory}/toggle', [LoanCategoryController::class, 'toggleStatus'])
      ->name('loan_categories.toggle');
-Route::resource('loans', App\Http\Controllers\Loan\LoanController::class);
+Route::resource('loans', LoanController::class);
+Route::post('/loans/{id}/preclosure/set', [LoanController::class, 'setPreclosureFee'])->name('loans.preclosure.set');
+Route::post('/loans/{id}/preclosure/pay', [LoanController::class, 'markPreclosurePaid'])->name('loans.preclosure.pay');
+
 Route::resource('loan_payments', LoanPaymentController::class);
 
 
@@ -100,17 +104,56 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
+// NEW CLIENT REQUST CONTROLLER
+
+
+use App\Http\Controllers\Loan\LoanRequestNewClientController;
+use App\Http\Controllers\Loan\LoanRequestContinuengClientController;
+Route::resource('loan_request_continueng_client', LoanRequestContinuengClientController::class);
+
+Route::resource('loan_request_new_client', LoanRequestNewClientController::class)
+    ->names([
+        'index' => 'loan_request_new_client.index',
+        'create' => 'loan_request_new_client.create',
+        'store' => 'loan_request_new_client.store',
+        'show' => 'loan_request_new_client.show',
+        'edit' => 'loan_request_new_client.edit', // This is the crucial line
+        'update' => 'loan_request_new_client.update',
+        'destroy' => 'loan_request_new_client.destroy',
+    ]);
+
+use App\Http\Controllers\Loan\LoanApprovalController;
+
+Route::prefix('loan-approvals')->middleware(['auth'])->group(function () {
+    Route::get('loan-approvals/', [LoanApprovalController::class, 'index'])->name('loan-approvals.index');
+    Route::get('loan-approvals/{id}', [LoanApprovalController::class, 'show'])->name('loan-approvals.show');
+    Route::post('loan-approvals/{id}/approve', [LoanApprovalController::class, 'approve'])->name('loan-approvals.approve');
+    Route::post('loan-approvals/{id}/reject', [LoanApprovalController::class, 'reject'])->name('loan-approvals.reject');
+});
+
+use App\Http\Controllers\Loan\RepaymentScheduleController;
+Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
+Route::post('/repayments/pay/{id}', [RepaymentScheduleController::class, 'pay'])->name('repayments.pay');
+Route::post('/schedules/{id}/penalty', [RepaymentScheduleController::class, 'addPenalty'])->name('schedules.addPenalty');
+
+// Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
+
+
+
+
+
+
+
+
+
+
+
+
 
 use App\Http\Controllers\Loan\ClientLoanController;
 Route::resource('client_loans', ClientLoanController::class);
 Route::post('client_loans/{clientLoan}/close', [ClientLoanController::class, 'closeLoan'])->name('client_loans.close');
 
-use App\Http\Controllers\Loan\LoanApprovalController;
-
-Route::prefix('loans')->group(function () {
-    Route::get('/{clientLoan}/approve', [LoanApprovalController::class, 'edit'])->name('loans.approve.edit');
-    Route::put('/{clientLoan}/approve', [LoanApprovalController::class, 'update'])->name('loans.approve.update');
-});
 use App\Http\Controllers\Loan\DailyCollectionController;
 
 Route::middleware(['auth'])->group(function () {

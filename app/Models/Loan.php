@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 class Loan extends Model
 {
@@ -14,110 +16,192 @@ class Loan extends Model
 
     /**
      * The attributes that are mass assignable.
-     * Note: calculated fields like total_outstanding are usually guarded or calculated in the controller/model events.
      */
     protected $fillable = [
-        'client_id',
-        'loan_category_id',
         'group_center_id',
+        'group_id',
+        'client_id',
+        'collection_officer_id',
+        'loan_category_id',
         'loan_number',
-        'disbursement_date',
+
+        // client requests
+        'amount_requested',
+        'client_payable_frequency',
         'status',
-        'first_payment_date',
-        'last_payment_date',
-        'next_payment_date',
-        'delinquency_status',
-        'total_interest',
-        'total_payable',
-        'outstanding_principal',
-        'outstanding_interest',
-        'outstanding_fees',
-        'total_outstanding',
-        'total_paid',
-        'interest_paid',
-        'fees_paid',
+
+        // approval and fees
+        'amount_disbursed',
+        'membership_fee',
+        'insurance_fee',
+        'officer_visit_fee',
+        'other_fee',
+        'penalty_fee',
+        'preclosure_fee',
+        'interest_rate',
+        'interest_amount',
+        'repayment_frequency',
+        'max_term_days',
+        'max_term_months',
+        'total_days_due',
+        'principal_due',
+        'interest_due',
+        'disbursement_date',
+
+        // repayments
+        'amount_paid',
+        'preclosure_fee_paid',
+        'penalty_fee_paid',
+        'other_fee_paid',
+
+        // tracking & balance
+        'outstanding_balance',
+        'start_date',
+        'end_date',
+        'days_left',
+
+        // closure
         'closed_at',
         'closure_reason',
+
+        // system fields
+        'currency',
         'created_by',
+        'approved_by',
         'updated_by',
+        'is_active',
+        'is_new_client',
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * The attributes that should be cast.
      */
     protected $casts = [
+        'amount_requested' => 'decimal:2',
+        'amount_disbursed' => 'decimal:2',
+        'client_payable_frequency' => 'decimal:2',
+        'membership_fee' => 'decimal:2',
+        'insurance_fee' => 'decimal:2',
+        'officer_visit_fee' => 'decimal:2',
+        'other_fee' => 'decimal:2',
+        'penalty_fee' => 'decimal:2',
+        'preclosure_fee' => 'decimal:2',
+        'interest_rate' => 'decimal:2',
+        'interest_amount' => 'decimal:2',
+        'principal_due' => 'decimal:2',
+        'interest_due' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
+        'penalty_fee_paid' => 'decimal:2',
+        'preclosure_fee_paid' => 'decimal:2',
+        'other_fee_paid' => 'decimal:2',
+        'outstanding_balance' => 'decimal:2',
+        'is_active' => 'boolean',
+        'is_new_client' => 'boolean',
         'disbursement_date' => 'date',
-        'first_payment_date' => 'date',
-        'last_payment_date' => 'date',
-        'next_payment_date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'closed_at' => 'datetime',
-        'total_interest' => 'decimal:2',
-        'total_payable' => 'decimal:2',
-        'outstanding_principal' => 'decimal:2',
-        'outstanding_interest' => 'decimal:2',
-        'outstanding_fees' => 'decimal:2',
-        'total_outstanding' => 'decimal:2',
-        'total_paid' => 'decimal:2',
-        'interest_paid' => 'decimal:2',
-        'fees_paid' => 'decimal:2',
+        'created_at' => 'date',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
-
     /**
-     * Get the client (borrower) associated with the loan.
+     * Define relationships.
      */
-    public function client(): BelongsTo
+
+    // 🔗 Client who took the loan
+    public function client()
     {
-        // Assuming your client/user model is named 'User' or 'Client'
-        // Since the migration uses client_id, we'll assume a Client model exists.
-        return $this->belongsTo(Client::class, 'client_id');
+        return $this->belongsTo(Client::class);
     }
 
-    /**
-     * Get the category definition for the loan.
-     */
-    public function category(): BelongsTo
+    // 🔗 Loan category (product)
+    public function loanCategory()
     {
-        return $this->belongsTo(LoanCategory::class, 'loan_category_id');
+        return $this->belongsTo(LoanCategory::class);
     }
 
-    public function groupCenter(): BelongsTo // <-- NEW RELATIONSHIP
+    // 🔗 Group or center relationships
+    public function group()
     {
-        return $this->belongsTo(GroupCenter::class, 'group_center_id');
+        return $this->belongsTo(Group::class);
     }
 
-
-    /**
-     * Get the user who created the loan.
-     */
-    public function creator(): BelongsTo
+    public function groupCenter()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(GroupCenter::class);
+    }
+    public function collectionOfficer()
+    {
+        return $this->belongsTo(Employee::class, 'collection_officer_id');
     }
 
-    /**
-     * Get the user who last updated the loan.
-     */
-    public function updater(): BelongsTo
+    // 🔗 Creator / approver users
+    public function creator()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(Employee::class, 'created_by');
     }
 
-    public function repaymentSchedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function approver()
+    {
+        return $this->belongsTo(Employee::class, 'approved_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(Employee::class, 'updated_by');
+    }
+    public function repaymentSchedules()
     {
         return $this->hasMany(RepaymentSchedule::class);
     }
 
     /**
-     * A loan has many payments recorded against it.
-     * Using FQN for the return type to avoid TypeError.
+     * 🔢 Accessors & Calculations
      */
-    public function payments(): \Illuminate\Database\Eloquent\Relations\HasMany
+
+    // Automatically get total fees (even though it's virtual in DB)
+    public function getTotalFeeAttribute()
+    {
+        return ($this->membership_fee ?? 0)
+             + ($this->insurance_fee ?? 0)
+             + ($this->other_fee ?? 0)
+             + ($this->penalty_fee ?? 0)
+             + ($this->preclosure_fee ?? 0);
+    }
+
+    public function getTotalDueAttribute()
+    {
+        return ($this->principal_due ?? 0) + ($this->interest_due ?? 0);
+    }
+
+    public function getRepayableAmountAttribute()
+    {
+        return ($this->amount_disbursed ?? 0)
+             + ($this->interest_amount ?? 0);
+    }
+
+    public function getTotalAmountPaidAttribute()
+    {
+        return ($this->penalty_fee_paid ?? 0)
+             + ($this->preclosure_fee_paid ?? 0)
+             + ($this->amount_paid ?? 0)
+             + ($this->other_fee_paid ?? 0);
+    }
+
+    public function getProfitLossAmountAttribute()
+    {
+        return $this->total_amount_paid
+             + ($this->membership_fee ?? 0)
+             + ($this->insurance_fee ?? 0)
+             - $this->amount_disbursed;
+    }
+
+    public function getOutstandingBalanceAttribute()
+{
+    return max(0, $this->repayable_amount - $this->amount_paid);
+}
+
+    public function payments()
     {
         return $this->hasMany(Payment::class);
     }

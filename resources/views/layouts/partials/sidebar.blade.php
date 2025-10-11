@@ -61,6 +61,27 @@
             $canManageSettings = $isAdmin || $isDirector || $isCEO;
         @endphp
 
+        <a href="{{ route('loans.index') }}" class="nav-link {{ Request::is('loans*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i>
+            <span>Loans</span>
+        </a>
+
+        <a href="{{ route('loan_request_continueng_client.index') }}" class="nav-link {{ Request::is('loan_request_continueng_client*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i>
+            <span>Continuing Client Loans</span>
+        </a>
+
+        <a href="{{ route('loan_request_new_client.index') }}" class="nav-link {{ Request::is('loan_request_new_client*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i>
+            <span>New Client Loans</span>
+        </a>
+
+        <a href="{{ route('loan-approvals.index') }}" class="nav-link {{ Request::is('loan-approvals*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i>
+            <span>Client Loans Approval</span>
+        </a>
+
+
         <a href="{{ route('employees.index') }}" class="nav-link {{ Request::is('employees*') ? 'active' : '' }}">
             <i class="bi bi-person-lines-fill"></i>
             <span>Employees</span>
@@ -79,10 +100,12 @@
             <span>Clients</span>
         </a>
 
-        <a href="{{ route('client_loans.index') }}" class="nav-link {{ Request::is('client_loans*') ? 'active' : '' }}">
+        <a href="{{ route('loan_categories.index') }}" class="nav-link {{ Request::is('loan_categories*') ? 'active' : '' }}">
             <i class="bi bi-money"></i>
-            <span>Client Loans</span>
+            <span>Loans categories</span>
         </a>
+        
+
         <a href="{{ route('client-loan-photos.index') }}" class="nav-link {{ Request::is('client-loan-photos*') ? 'active' : '' }}">
             <i class="bi bi-photo"></i>
             <span>Client loan photos</span>
@@ -117,7 +140,10 @@
             <i class="bi bi-money"></i>
             <span>Loans Payments</span>
         </a>
-
+        <a href="{{ route('client_loans.index') }}" class="nav-link {{ Request::is('client_loans*') ? 'active' : '' }}">
+            <i class="bi bi-money"></i>
+            <span>Client Loans</span>
+        </a>
         @if($canManageClients)
         <a href="" class="nav-link {{ Request::is('clientss*') ? 'active' : '' }}">
             <i class="bi bi-person-lines-fill"></i>

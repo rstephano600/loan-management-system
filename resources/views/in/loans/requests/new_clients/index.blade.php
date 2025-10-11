@@ -1,14 +1,14 @@
 @extends('layouts.app')
+@section('title', 'New Clients Loan Details')
+@section('page-title', 'New Clients Loan Details')
 
 @section('content')
 <div class="container mt-4">
-    <h3 class="mb-4">Loans List</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Loan Requests</h3>
+        <a href="{{ route('loan_request_new_client.create') }}" class="btn btn-primary">+ New Loan Request</a>
+    </div>
 
-    <!-- <div class="text-end mb-3">
-        <a href="{{ route('loans.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> New Loan Request
-        </a>
-    </div> -->
 
     <div class="card shadow-sm">
         <div class="card-body">
@@ -16,7 +16,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
-                        <th>Loan No.</th>
+                        <th>Loan Number</th>
                         <th>Client</th>
                         <th>Category</th>
                         <th>Amount Requested</th>
@@ -26,22 +26,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($loans as $loan)
+                    @forelse ($loans as $loan)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $loan->loan_number }}</td>
                             <td>{{ $loan->client?->first_name }} {{ $loan->client?->last_name }}</td>
-                            <td>{{ $loan->loanCategory?->name ?? 'N/A' }}</td>
-                            <td>{{ number_format($loan->amount_requested, 2) }} {{ $loan->loanCategory?->currency ?? 'TZS' }}</td>
+                            <td>{{ $loan->loanCategory?->name }}</td>
+                            <td>{{ number_format($loan->amount_requested, 2) }} {{ $loan->loanCategory?->currency }}</td>
                             <td>
-                                <span class="badge bg-{{ $loan->status === 'pending' ? 'warning' : ($loan->status === 'approved' ? 'success' : 'secondary') }}">
+                                <span class="badge bg-{{ $loan->status === 'pending' ? 'warning' : 'success' }}">
                                     {{ ucfirst($loan->status) }}
                                 </span>
                             </td>
                             <td>{{ $loan->created_at->format('Y-m-d') }}</td>
                             <td>
-                                <a href="{{ route('loans.show', $loan->id) }}" class="btn btn-sm btn-info text-white"> <i class="bi bi-eye"></i></a>
-                                <!-- <a href="{{ route('loans.edit', $loan->id) }}" class="btn btn-sm btn-warning">Edit</a> -->
+                                <a href="{{ route('loan_request_new_client.show', $loan->id) }}" class="btn btn-sm btn-info"> <i class="bi bi-eye"></i></a>
+                                <a href="{{ route('loan_request_new_client.edit', $loan->id) }}" class="btn btn-sm btn-secondary"> <i class="bi bi-pencil"></i></a>
+                                <form action="{{ route('loan_request_new_client.destroy', $loan->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this loan request?')"><i class="bi bi-trash"></i></button>
+                                </form>
+                                
                             </td>
                         </tr>
                     @empty
@@ -51,10 +57,6 @@
                     @endforelse
                 </tbody>
             </table>
-
-            <div class="mt-3">
-                {{ $loans->links() }}
-            </div>
         </div>
     </div>
 </div>
