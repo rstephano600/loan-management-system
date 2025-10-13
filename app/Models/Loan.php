@@ -167,6 +167,7 @@ class Loan extends Model
     {
         return ($this->membership_fee ?? 0)
              + ($this->insurance_fee ?? 0)
+             + ($this->officer_visit_fee ?? 0)
              + ($this->other_fee ?? 0)
              + ($this->penalty_fee ?? 0)
              + ($this->preclosure_fee ?? 0);
@@ -196,17 +197,19 @@ class Loan extends Model
         return $this->total_amount_paid
              + ($this->membership_fee ?? 0)
              + ($this->insurance_fee ?? 0)
+             + ($this->officer_visit_fee ?? 0)
              - $this->amount_disbursed;
     }
 
     public function getOutstandingBalanceAttribute()
-{
+    {
     return max(0, $this->repayable_amount - $this->amount_paid);
-}
+    }
 
     public function payments()
     {
         return $this->hasMany(Payment::class);
     }
+    
     // You would typically add a hasMany relationship to 'Repayment' or 'Transaction' here.
 }

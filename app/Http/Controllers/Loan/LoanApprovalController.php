@@ -40,8 +40,8 @@ class LoanApprovalController extends Controller
     }
 
 
-    public function approve(Request $request, $id)
-    {
+public function approve(Request $request, $id)
+{
     $loan = Loan::findOrFail($id);
     $category = LoanCategory::findOrFail($loan->loan_category_id);
 
@@ -49,35 +49,25 @@ class LoanApprovalController extends Controller
         return redirect()->back()->with('error', 'Loan already approved or processed.');
     }
 
+    $membershipFee = $loan->membership_fee;
+
     // Step 1: Approve the loan
     $loan->update([
-        'membership_fee_paid' =>$loan->membership_fee,
-        'insurance_fee_paid' =>$loan->insurance_fee,
-        'officer_visit_fee_paid' =>$loan->officer_visit_fee,
-        'status'            => 'approved',
-        'approved_by'       => Auth::id(),
-        'disbursement_date' => now(),
+        'amount_disbursed'       => $category->amount_disbursed ?? $loan->amount_requested,
+        'interest_rate'          => $category->interest_rate ?? 0,
+        'interest_amount'        => $category->interest_amount ?? 0,
+        'membership_fee_paid'    => $membershipFee ?? 0,
+        'insurance_fee_paid'     => $category->insurance_fee ?? 0,
+        'officer_visit_fee_paid' => $category->officer_visit_fee ?? 0,
+        'status'                 => 'approved',
+        'approved_by'            => Auth::id(),
+        'disbursement_date'      => now(),
     ]);
 
-    // Step 2: Generate repayment schedule
-
-    $totalDays = $category->total_days_due ?? 0;
-    // $installmentNumber = 'INST' . $client->last_name . strtoupper(Str::random(4)) . '-' . now()->format('YmdHis');
-
-    for ($i = 1; $i <= $totalDays; $i++) {
-        RepaymentSchedule::create([
-            'loan_id'           => $loan->id,
-            'due_day_number'    => $i,
-            'principal_due'     => $category->principal_due ?? 0,
-            'interest_due'      => $category->interest_due ?? 0,
-            'days_left'         => $totalDays - $i,
-            'status'            => 'pending',
-            'created_by'            => Auth::id(),
-        ]);
-    }
-        return redirect()->route('loan-approvals.index')->with('success', 'Loan approved and repayment schedule generated successfully.');
-
-    }
+    return redirect()
+        ->route('loan-approvals.index')
+        ->with('success', 'Loan approved and repayment schedule generated successfully.');
+}
 
     /**
      * Reject a loan.

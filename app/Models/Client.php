@@ -109,5 +109,11 @@ public function loanPhotos()
     return $this->hasMany(ClientLoanPhoto::class);
 }
 
+public function loans()
+{
+    return $this->hasMany(Loan::class, 'client_id');
+}
+
+
 
 }

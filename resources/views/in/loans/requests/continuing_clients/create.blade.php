@@ -1,12 +1,12 @@
 @extends('layouts.app')
 @section('title', 'Create a New Loan Details')
-@section('page-title', 'Create a New Loan Details') 
+@section('page-title', 'Create a New Loan Details ') 
 
 @section('content')
 <div class="container mt-4">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">New Loan Request (New Client)</h5>
+            <h5 class="mb-0">New Loan Request (Continuing Client)</h5>
         </div>
 
         <div class="card-body">

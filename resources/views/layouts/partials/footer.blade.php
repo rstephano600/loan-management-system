@@ -7,24 +7,24 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <small class="text-muted">
-                    &copy; {{ date('Y') }} Mfumo wa Mikopo - Haki Zote Zimehifadhiwa
+                    &copy; {{ date('Y') }} ArBif Management system - All right reserved
                 </small>
             </div>
             <div class="col-md-6 text-md-end">
                 <small class="text-muted">
-                    Mtumiaji: <strong>{{ Auth::user()->username }}</strong> | 
-                    Cheo: <strong>{{ ucfirst(str_replace('_', ' ', Auth::user()->role)) }}</strong> |
-                    Hali: <span class="badge bg-success">{{ ucfirst(Auth::user()->status) }}</span>
+                    User: <strong>{{ Auth::user()->username }}</strong> | 
+                    Role: <strong>{{ ucfirst(str_replace('_', ' ', Auth::user()->role)) }}</strong> |
+                    A. Status: <span class="badge bg-success">{{ ucfirst(Auth::user()->status) }}</span>
                 </small>
             </div>
         </div>
         <div class="row mt-2">
             <div class="col text-center">
                 <small class="text-muted">
-                    Toleo: 1.0.0 | 
-                    <a href="" class="text-decoration-none">Msaada</a> | 
-                    <a href="" class="text-decoration-none">Sera ya Faragha</a> | 
-                    <a href="" class="text-decoration-none">Masharti</a>
+                    Version: 1.0.0 | 
+                    <a href="" class="text-decoration-none">Support</a> | 
+                    <a href="" class="text-decoration-none">Privacy</a> | 
+                    <a href="" class="text-decoration-none">Our Policies</a>
                 </small>
             </div>
         </div>

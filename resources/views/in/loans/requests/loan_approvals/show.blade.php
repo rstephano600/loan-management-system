@@ -16,14 +16,20 @@
                 <dt class="col-sm-4">Category</dt>
                 <dd class="col-sm-8">{{ $loan->loanCategory?->name }}</dd>
 
-                <dt class="col-sm-4">Amount Requested</dt>
+                <dt class="col-sm-4">Amount To disburse</dt>
                 <dd class="col-sm-8">{{ number_format($loan->amount_requested, 2) }} {{ $loan->loanCategory?->currency }}</dd>
 
-                <!-- <dt class="col-sm-4">Insurance Fee</dt>
+                <dt class="col-sm-4">Membership Fee</dt>
+                <dd class="col-sm-8">{{ number_format($loan->membership_fee , 2) }}</dd>
+               
+                <dt class="col-sm-4">Insurance Fee</dt>
                 <dd class="col-sm-8">{{ number_format($loan->loanCategory?->insurance_fee, 2) }}</dd>
 
                 <dt class="col-sm-4">Officer Visit Fee</dt>
-                <dd class="col-sm-8">{{ number_format($loan->loanCategory?->officer_visit_fee, 2) }}</dd> -->
+                <dd class="col-sm-8">{{ number_format($loan->loanCategory?->officer_visit_fee, 2) }}</dd>
+
+                <dt class="col-sm-4">Total Amount Paid to Date</dt>
+                <dd class="col-sm-8">{{ number_format($loan->amount_paid, 2) }}</dd>
 
             </dl>
 

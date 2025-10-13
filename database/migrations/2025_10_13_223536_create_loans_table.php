@@ -14,20 +14,19 @@ return new class extends Migration
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
 
-            // 🔹 Relationships
+            // Relationships
             $table->foreignId('group_center_id')->nullable()->constrained('group_centers')->nullOnDelete();
             $table->foreignId('group_id')->nullable()->constrained('groups')->nullOnDelete();
             $table->foreignId('client_id')->nullable()->constrained('clients')->nullOnDelete();
             $table->foreignId('collection_officer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('loan_category_id')->nullable()->constrained('loan_categories')->nullOnDelete();
 
-            // 🔹 Core Loan Information
+            // Core Loan Information
             $table->string('loan_number')->unique();
             $table->decimal('amount_requested', 15, 2)->default(0);
             $table->decimal('client_payable_frequency', 15, 2)->default(0);
-            $table->enum('status', ['pending', 'approved', 'active', 'completed', 'defaulted', 'closed'])->default('pending');
-            
-            // 🔹 Approval & Fees
+
+            // Approval & Fees
             $table->decimal('amount_disbursed', 15, 2)->default(0);
             $table->decimal('membership_fee', 15, 2)->default(0);
             $table->decimal('insurance_fee', 15, 2)->default(0);
@@ -36,7 +35,7 @@ return new class extends Migration
             $table->decimal('penalty_fee', 15, 2)->default(0);
             $table->decimal('preclosure_fee', 15, 2)->default(0);
 
-            // 🔹 Interest and Terms
+            // Interest and Terms
             $table->decimal('interest_rate', 8, 2)->nullable()->default(20);
             $table->decimal('interest_amount', 15, 2)->nullable()->default(0);
             $table->enum('repayment_frequency', ['daily', 'weekly', 'bi_weekly', 'monthly', 'quarterly'])->default('daily');
@@ -63,27 +62,31 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->integer('days_left')->default(0);
 
-            // 🔹 Closure Info
+            // Closure Info
             $table->timestamp('closed_at')->nullable();
             $table->string('closure_reason')->nullable();
 
-                        // 1. Total Fees
-            $table->decimal('total_fees', 15, 2)->virtualAs('membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee')->change();
-                        // 2. Total Repayable Amount
-            $table->decimal('total_repayable', 15, 2)->virtualAs('amount_disbursed + interest_amount + ( membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee)')->change();
+            // 1. Total Fees
+            $table->decimal('total_fees', 15, 2)->virtualAs('membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee');
 
-                        // 3. Total Paid Amount
-            $table->decimal('total_amount_paid', 15, 2)->virtualAs('penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid')->change();
+            // 2. Total Repayable Amount
+            $table->decimal('total_repayable', 15, 2)->virtualAs('amount_disbursed + interest_amount');
 
-                        // 4. Outstanding Balance
-            $table->decimal('outstanding_balance', 15, 2)->virtualAs('amount_disbursed + interest_amount + ( membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee) - (penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid))')->change();
+            // 3. Total Paid Amount
+            $table->decimal('total_amount_paid', 15, 2)->virtualAs('penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid');
 
-            // loss and profit
-            $table->decimal('total_profit', 15, 2)->virtualAs('((penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid) - amount_disbursed)')->change();
-            
+            // 4. Outstanding Balance
+            $table->decimal('outstanding_balance', 15, 2)->virtualAs('amount_disbursed + interest_amount + (membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee) - (penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid)');
+
+            // 5. Total Profit
+            $table->decimal('total_profit', 15, 2)->virtualAs('penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid - amount_disbursed');
+
             // 🔹 System Fields
+            $table->enum('status', ['pending', 'approved', 'active', 'completed', 'defaulted', 'closed'])->default('pending');
+            
             $table->string('currency', 10)->default('TZS');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->date('approved_at')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('is_active')->default(true);

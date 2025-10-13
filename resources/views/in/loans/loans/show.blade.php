@@ -142,7 +142,7 @@
                      @csrf
                      <div class="input-group mb-2" style="max-width: 250px;">
                          <input type="number" name="preclosure_fee" step="0.01" min="0" class="form-control" placeholder="Enter fee amount" required>
-                         <button type="submit" class="btn btn-outline-primary btn-sm">Set Fee</button>
+                         <button type="submit" class="btn btn-outline-primary btn-sm" onclick="return confirm('Please confirm — do you want to set preclosure Fee for This Loan?')">Set Fee</button>
                      </div>
                  </form>
 
@@ -150,9 +150,9 @@
                  @if($loan->preclosure_fee > 0 && $loan->preclosure_fee_paid < $loan->preclosure_fee)
                  <form action="{{ route('loans.preclosure.pay', $loan->id) }}" method="POST" class="d-inline">
                      @csrf
-                     <button type="submit" class="btn btn-success btn-sm">
-                         Mark as Paid
-                     </button>
+
+                     <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Please confirm — do you want to Mark preclosure as Paid??')">Mark as Pay</button>
+
                  </form>
                  @endif
 
@@ -360,7 +360,7 @@
                         <th>Status</th>
                         <th>Days Left</th>
                         <th>Mark Paid</th>
-                        <th>Add Penalty</th>
+                        <!-- <th>Add Penalty</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -381,21 +381,22 @@
                                 @if($schedule->status !== 'paid')
                                     <form action="{{ route('repayments.pay', $schedule->id) }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-primary" t onclick="return confirm('Your applying Pays for this schedule ')">pay</button>
+                            <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Please confirm — do you want to make this payment now?')">Pay</button>
+
                                 </form>
                                     </form>
                                 @else
                                     <span class="text-success fw-bold">✔ Paid</span>
                                 @endif
                             </td>
-                            <td>
+                            <!-- <td>
                                 @if($schedule->status !== 'paid')
                                 <form action="{{ route('schedules.addPenalty', $schedule->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="btn btn-warning btn-sm" t onclick="return confirm('Do you want to apply 2000 penalty fee for this schedule ?')">Apply Penalty</button>
                                 </form>
                                 @endif
-                            </td>
+                            </td> -->
                         </tr>
                     @endforeach
                 </tbody>
@@ -415,7 +416,7 @@
                         <th>installment Number</th>
                         <!-- <th>Due Day</th> -->
                         <th>Principal Paid</th>
-                        <th>Penalty Paid</th>
+                        <!-- <th>Penalty Paid</th> -->
                         <th>Toatal Paid</th>
                         <th>Status</th>
                         <th>Days Left</th>
@@ -428,7 +429,7 @@
                             <td>{{ $schedule->installment_number }}</td>
                             <!-- <td>Day {{ $schedule->due_day_number }}</td> -->
                             <td>{{ number_format($schedule->principal_paid, 2) }}</td>
-                            <td>{{ number_format($schedule->penalty_paid, 2) }}</td>
+                            <!-- <td>{{ number_format($schedule->penalty_paid, 2) }}</td> -->
                             <td>{{ number_format($schedule->total_proncipal_penalty_paid, 2) }}</td>
                             <td>
                                 <span class="badge bg-{{ $schedule->status === 'paid' ? 'success' : ($schedule->status === 'overdue' ? 'danger' : 'warning') }}">

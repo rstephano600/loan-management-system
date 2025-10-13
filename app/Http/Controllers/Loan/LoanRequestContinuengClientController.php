@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\GroupCenter;
 use App\Models\Group;
+use App\Models\RepaymentSchedule;
 
 
 class LoanRequestContinuengClientController extends Controller
@@ -47,9 +48,11 @@ class LoanRequestContinuengClientController extends Controller
          $categories = LoanCategory::where('is_active', true)->get();
 
     // Active clients
-         $clients = Client::where('status', 'active')
-             ->with(['group', 'groupCenter']) // eager-load relationships
-             ->get();
+$clients = Client::where('status', 'active')
+    ->whereHas('loans') // ✅ correct method name
+    ->with(['group', 'groupCenter']) // eager-load relationships
+    ->get();
+
 
     // Group centers and groups for dropdowns (optional)
          $centers = GroupCenter::where('is_active', true)->get();
@@ -63,52 +66,56 @@ class LoanRequestContinuengClientController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'loan_category_id' => 'required|exists:loan_categories,id',
+    $validated = $request->validate([
+        'client_id' => 'required|exists:clients,id',
+        'loan_category_id' => 'required|exists:loan_categories,id',
+    ]);
+
+    $loanCategory = LoanCategory::findOrFail($validated['loan_category_id']);
+    $client = Client::findOrFail($validated['client_id']);
+
+    $loanNumber = 'LN-' . $client->last_name . '-' . strtoupper(Str::random(4)) . '-' . now()->format('YmdHis');
+
+    $loan = Loan::create([
+        'group_id' => $client->group_id,
+        'group_center_id' => $client->group_center_id,
+        'client_id' => $validated['client_id'],
+        'collection_officer_id' => $client->assigned_loan_officer_id,
+        'loan_category_id' => $loanCategory->id,
+        'loan_number' => $loanNumber,
+
+        'amount_requested' => $loanCategory->amount_disbursed ?? 0,
+        'client_payable_frequency' => $loanCategory->principal_due ?? 0,
+        'status' => 'pending',
+
+        'membership_fee' => 0,
+        'insurance_fee' => $loanCategory->insurance_fee ?? 0,
+        'officer_visit_fee' => $loanCategory->officer_visit_fee ?? 0,
+        'repayment_frequency' => $loanCategory->repayment_frequency ?? 'daily',
+        'max_term_days' => $loanCategory->max_term_days ?? 0,
+        'max_term_months' => $loanCategory->max_term_months ?? 0,
+        'total_days_due' => $loanCategory->total_days_due ?? 0,
+        'principal_due' => $loanCategory->principal_due ?? 0,
+        'interest_due' => $loanCategory->interest_due ?? 0,
+        'currency' => $loanCategory->currency ?? 'TZS',
+
+        'created_by' => Auth::id(),
+        'is_new_client' => false,
+    ]);
+
+    $totalDays = $loanCategory->total_days_due ?? 0;
+
+    for ($i = 1; $i <= $totalDays; $i++) {
+        RepaymentSchedule::create([
+            'loan_id'        => $loan->id,
+            'due_day_number' => $i,
+            'principal_due'  => $loanCategory->principal_due ?? 0,
+            'interest_due'   => $loanCategory->interest_due ?? 0,
+            'days_left'      => $totalDays - $i,
+            'status'         => 'pending',
+            'created_by'     => Auth::id(),
         ]);
-
-        // Fetch the chosen loan category
-        $loanCategory = LoanCategory::findOrFail($validated['loan_category_id']);
-        $client = Client::findOrFail($validated['client_id']);
-
-        // Generate a unique loan number
-        $loanNumber = 'LN-' . $client->last_name . strtoupper(Str::random(4)) . '-' . now()->format('YmdHis');
-
-        // Create the pending loan request
-        $loan = Loan::create([
-            'group_id' => $client->group_id,
-            'group_center_id' => $client->group_center_id,
-            'client_id' => $validated['client_id'],
-            'collection_officer_id' => $client->assigned_loan_officer_id,
-            'loan_category_id' => $loanCategory->id,
-            'loan_number' => $loanNumber,
-
-            // client request details
-            'amount_requested' => $loanCategory->amount_disbursed ?? 0,
-            'client_payable_frequency' =>$loanCategory->principal_due ?? 0,
-            'status' => 'pending',
-
-            // preload from category
-            'amount_disbursed' => $loanCategory->amount_disbursed ?? 0, // initially same as requested
-            'membership_fee' => 0,
-            'insurance_fee' => $loanCategory->insurance_fee ?? 0,
-            'officer_visit_fee' => $loanCategory->officer_visit_fee ?? 0,
-            'interest_rate' => $loanCategory->interest_rate ?? 0,
-            'interest_amount' => $loanCategory->interest_amount ?? 0,
-            'repayment_frequency' => $loanCategory->repayment_frequency ?? 'daily',
-            'max_term_days' => $loanCategory->max_term_days ?? 0,
-            'max_term_months' => $loanCategory->max_term_months ?? 0,
-            'total_days_due' => $loanCategory->total_days_due ?? 0,
-            'principal_due' => $loanCategory->principal_due ?? 0,
-            'interest_due' => $loanCategory->interest_due ?? 0,
-            'currency' => $loanCategory->currency ?? 'TZS',
-
-            // system
-            'created_by' => Auth::id(),
-            'is_active' => true,
-            'is_new_client' => false,
-        ]);
+    }
 
         return redirect()
             ->route('loan_request_continueng_client.index')
