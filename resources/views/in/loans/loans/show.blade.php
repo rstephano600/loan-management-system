@@ -198,6 +198,9 @@
                         <dt class="col-sm-6">Repayment Frequency</dt>
                         <dd class="col-sm-6 text-end">{{ $loan->repayment_frequency ?? 'N/A' }}</dd>
 
+                        <dt class="col-sm-6">Repayment Fees</dt>
+                        <dd class="col-sm-6 text-end">{{ number_format($loan->total_fee, 2) }}</dd>
+
                         <dt class="col-sm-6">Total Repayable Amount</dt>
                         <dd class="col-sm-6 text-end fw-bold">
                             {{ number_format($loan->repayable_amount, 2) }}

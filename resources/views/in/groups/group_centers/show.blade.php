@@ -34,10 +34,10 @@
                     <p class="h6 text-dark">{{ $groupCenter->center_code }}</p>
                 </div>
                 
-                <div class="col-md-6 col-lg-4">
+                <!-- <div class="col-md-6 col-lg-4">
                     <p class="mb-0"><strong>Collection Officer:</strong></p>
                     <p class="h6 text-dark">{{ $groupCenter->collection_officer->first_name ?? '—' }} {{ $groupCenter->collection_officer->last_name ?? '' }}</p>
-                </div>
+                </div> -->
 
                 <div class="col-md-6 col-lg-4">
                     <p class="mb-0"><strong>Location:</strong></p>

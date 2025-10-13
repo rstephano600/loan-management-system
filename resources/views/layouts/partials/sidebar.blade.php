@@ -119,6 +119,30 @@
             <span>Daily Collections</span>
         </a>
 
+        <a href="{{ route('expenses.index') }}" class="nav-link {{ Request::is('expenses*') ? 'active' : '' }}">
+            <i class="bi bi-"></i>
+            <span>Expenses</span>
+        </a>
+        <a href="{{ route('expense-categories.index') }}" class="nav-link {{ Request::is('expense-categories*') ? 'active' : '' }}">
+            <i class="bi bi-"></i>
+            <span>Expense Categories</span>
+        </a>
+        <a href="{{ route('employee_payments.index') }}" class="nav-link {{ Request::is('employee_payments*') ? 'active' : '' }}">
+            <i class="bi bi-"></i>
+            <span>Employee Salaries Payments</span>
+        </a>
+        <a href="{{ route('employee_salaries.index') }}" class="nav-link {{ Request::is('employee_salaries*') ? 'active' : '' }}">
+            <i class="bi bi-"></i>
+            <span>Employee Salaries</span>
+        </a>
+        <a href="{{ route('salary_levels.index') }}" class="nav-link {{ Request::is('salary_levels*') ? 'active' : '' }}">
+            <i class="bi bi-"></i>
+            <span>Salary Levels</span>
+        </a>
+        <a href="{{ route('donations.index') }}" class="nav-link {{ Request::is('donations*') ? 'active' : '' }}">
+            <i class="bi bi-"></i>
+            <span>Donations & Supports</span>
+        </a>
         <a href="{{ route('profile.show') }}" class="nav-link {{ Request::is('profile*') ? 'active' : '' }}">
             <i class="bi bi-person-circle"></i>
             <span>My Profile</span>

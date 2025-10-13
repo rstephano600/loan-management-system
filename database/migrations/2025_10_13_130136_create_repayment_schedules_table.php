@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('repayment_schedules', function (Blueprint $table) {
             $table->id();
-            $table->integer('loan_id');
+            $table->integer('loan_id')->nullable()->constrained('loans')->nullOnDelete();
             $table->string('installment_number')->unique()->nullable();
             $table->integer('due_day_number');
             $table->date('due_date')->nullable();

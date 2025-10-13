@@ -52,6 +52,9 @@ class Loan extends Model
         'amount_paid',
         'preclosure_fee_paid',
         'penalty_fee_paid',
+        'membership_fee_paid',
+        'officer_visit_fee_paid',
+        'insurance_fee_paid',
         'other_fee_paid',
 
         // tracking & balance

@@ -31,7 +31,7 @@
                         @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     
-                    {{-- Collection Officer --}}
+                    <!-- {{-- Collection Officer --}}
                     <div class="col-md-6">
                         <label for="collection_officer_id" class="form-label fw-bold">Collection Officer</label>
                         <select name="collection_officer_id" id="collection_officer_id" class="form-select @error('collection_officer_id') is-invalid @enderror">
@@ -43,7 +43,7 @@
                             @endforeach
                         </select>
                         @error('collection_officer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
+                    </div> -->
                     
                     {{-- Status --}}
                     <div class="col-md-6">

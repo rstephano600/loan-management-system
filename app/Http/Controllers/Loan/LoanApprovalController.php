@@ -51,6 +51,9 @@ class LoanApprovalController extends Controller
 
     // Step 1: Approve the loan
     $loan->update([
+        'membership_fee_paid' =>$loan->membership_fee,
+        'insurance_fee_paid' =>$loan->insurance_fee,
+        'officer_visit_fee_paid' =>$loan->officer_visit_fee,
         'status'            => 'approved',
         'approved_by'       => Auth::id(),
         'disbursement_date' => now(),

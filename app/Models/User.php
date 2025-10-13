@@ -212,4 +212,10 @@ class User extends Authenticatable
             'status' => 'active',
         ]);
     }
+
+    public function shareholder()
+    {
+        return $this->hasOne(Shareholder::class);
+    }
+
 }

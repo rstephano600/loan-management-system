@@ -108,4 +108,16 @@ class Employee extends Model
     {
         return $this->cv ? asset('storage/' . $this->cv) : null;
     }
+
+    public function shareholder()
+    {
+    return $this->hasOne(Shareholder::class);
+    }
+
+    public function salaries()
+{
+    return $this->hasMany(EmployeeSalary::class);
+}
+
+
 }

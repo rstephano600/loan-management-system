@@ -41,7 +41,7 @@
                     <th>Center Code</th>
                     <th>Center Name</th>
                     <th>Location</th>
-                    <th>Officer</th>
+                    <!-- <th>Officer</th> -->
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -53,7 +53,7 @@
                         <td>{{ $center->center_code }}</td>
                         <td>{{ $center->center_name }}</td>
                         <td>{{ $center->location }}</td>
-                        <td>{{ $center->collection_officer->first_name ?? '' }} {{ $center->collection_officer->last_name ?? '' }}</td>
+                        <!-- <td>{{ $center->collection_officer->first_name ?? '' }} {{ $center->collection_officer->last_name ?? '' }}</td> -->
                         <td>
                             <span class="badge bg-{{ $center->is_active == 1 ? 'success' : 'secondary' }}">
                                 {{ ucfirst($center->status) }}

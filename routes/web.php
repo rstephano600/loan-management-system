@@ -138,15 +138,29 @@ Route::post('/schedules/{id}/penalty', [RepaymentScheduleController::class, 'add
 
 // Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
 
+use App\Http\Controllers\Donation\DonationController;
+Route::resource('donations', DonationController::class);
 
+use App\Http\Controllers\Expense\ExpenseCategoryController;
+Route::resource('expense-categories', ExpenseCategoryController::class);
 
+use App\Http\Controllers\Expense\ExpenseController;
+Route::resource('expenses', ExpenseController::class);
 
+use App\Http\Controllers\Salary\SalaryLevelController;
+Route::resource('salary_levels', SalaryLevelController::class);
 
+use App\Http\Controllers\Salary\EmployeeSalaryController;
+Route::resource('employee_salaries', EmployeeSalaryController::class);
 
-
-
-
-
+use App\Http\Controllers\Salary\EmployeeSalaryPaymentController;
+Route::prefix('employee-payments')->name('employee_payments.')->group(function () {
+    Route::get('/', [EmployeeSalaryPaymentController::class, 'index'])->name('index');
+    Route::get('/{id}/create', [EmployeeSalaryPaymentController::class, 'create'])->name('create');
+    Route::post('/', [EmployeeSalaryPaymentController::class, 'store'])->name('store');
+    Route::get('/{id}', [EmployeeSalaryPaymentController::class, 'show'])->name('show');
+    Route::delete('/{id}', [EmployeeSalaryPaymentController::class, 'destroy'])->name('destroy');
+});
 
 
 

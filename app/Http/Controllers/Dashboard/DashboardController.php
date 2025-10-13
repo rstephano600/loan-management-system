@@ -56,5 +56,7 @@ class DashboardController extends Controller
             default:
                 return redirect()->route('user.dashboard');
         }
+
+        
     }
 }

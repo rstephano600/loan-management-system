@@ -52,6 +52,7 @@ return new class extends Migration
             // repayments
             $table->decimal('amount_paid', 15, 2)->nullable()->default(0);
             $table->decimal('membership_fee_paid', 15, 2)->nullable()->default(0);
+            $table->decimal('officer_visit_fee_paid', 15, 2)->nullable()->default(0);
             $table->decimal('insurance_fee_paid', 15, 2)->nullable()->default(0);
             $table->decimal('preclosure_fee_paid', 15, 2)->nullable()->default(0);
             $table->decimal('penalty_fee_paid', 15, 2)->nullable()->default(0)->comment('Late payment or fines');
@@ -66,20 +67,19 @@ return new class extends Migration
             $table->timestamp('closed_at')->nullable();
             $table->string('closure_reason')->nullable();
 
-            // 1. Total Fees
-            $table->decimal('total_fees', 15, 2)->virtualAs('membership_fee + other_fee + penalty_fee + preclosure_fee');
+                        // 1. Total Fees
+            $table->decimal('total_fees', 15, 2)->virtualAs('membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee')->change();
+                        // 2. Total Repayable Amount
+            $table->decimal('total_repayable', 15, 2)->virtualAs('amount_disbursed + interest_amount + ( membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee)')->change();
 
-            // 2. Total Repayable Amount
-            $table->decimal('total_repayable', 15, 2)->virtualAs('amount_disbursed + interest_amount + (membership_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee)');
+                        // 3. Total Paid Amount
+            $table->decimal('total_amount_paid', 15, 2)->virtualAs('penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid')->change();
 
-            // 3. Total Paid Amount
-            $table->decimal('total_amount_paid', 15, 2)->virtualAs('penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid');
-
-            // 5. Outstanding Balance
-            $table->decimal('outstanding_balance', 15, 2)->virtualAs('((amount_disbursed + interest_amount + (membership_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee)) - (amount_paid + preclosure_fee_paid + membership_fee + insurance_fee + penalty_fee_paid + other_fee_paid))');
+                        // 4. Outstanding Balance
+            $table->decimal('outstanding_balance', 15, 2)->virtualAs('amount_disbursed + interest_amount + ( membership_fee + officer_visit_fee + insurance_fee + other_fee + penalty_fee + preclosure_fee) - (penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid))')->change();
 
             // loss and profit
-            $table->decimal('total_profit', 15, 2)->virtualAs('(penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid) - amount_disbursed');
+            $table->decimal('total_profit', 15, 2)->virtualAs('((penalty_fee_paid + preclosure_fee_paid + amount_paid + other_fee_paid + membership_fee_paid + insurance_fee_paid + officer_visit_fee_paid) - amount_disbursed)')->change();
             
             // 🔹 System Fields
             $table->string('currency', 10)->default('TZS');
