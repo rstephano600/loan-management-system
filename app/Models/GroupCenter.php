@@ -38,11 +38,12 @@ class GroupCenter extends Model
         return $this->belongsTo(Employee::class, 'loan_officer_id');
     }
 
-    // Has many groups
+
     public function groups()
-    {
-        return $this->hasMany(Group::class, 'group_center_id');
-    }
+{
+    return $this->hasMany(Group::class, 'group_center_id');
+}
+
 
     public function collectionOfficer()
     {
@@ -52,4 +53,8 @@ class GroupCenter extends Model
     {
         return $this->belongsTo(Employee::class, 'collection_officer_id');
     }
+
+
 }
+
+

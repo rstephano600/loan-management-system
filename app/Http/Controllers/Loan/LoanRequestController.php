@@ -19,8 +19,13 @@ class LoanRequestController extends Controller
     public function index(Request $request)
     {
         $query = Loan::with(['client', 'loanCategory'])
-            ->whereIn('status', ['pending', 'approved', 'active']);
-
+        ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+                // Assuming `Employee` is linked to `User` via user_id
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $query->where('collection_officer_id', $employee->id);
+                }
+            });
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }

@@ -1,49 +1,55 @@
 @extends('layouts.app')
 
+@section('title', 'View Salary Level')
+@section('page-title', 'Salary Level Details')
+
 @section('content')
-<div class="container">
-    <h3>Salary Level Details</h3>
+<div class="container py-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">{{ $salaryLevel->name }}</h5>
+        </div>
 
-    <table class="table table-bordered">
-        <tr>
-            <th>Name</th>
-            <td>{{ $salaryLevel->name }}</td>
-        </tr>
-        <tr>
-            <th>Description</th>
-            <td>{{ $salaryLevel->description ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th>Default Salary</th>
-            <td>{{ number_format($salaryLevel->default_salary,2) ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th>Currency</th>
-            <td>{{ $salaryLevel->currency }}</td>
-        </tr>
-        <tr>
-            <th>Status</th>
-            <td>{{ ucfirst($salaryLevel->status) }}</td>
-        </tr>
-        <tr>
-            <th>Created By</th>
-            <td>{{ $salaryLevel->creator?->name ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th>Updated By</th>
-            <td>{{ $salaryLevel->updater?->name ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th>Created At</th>
-            <td>{{ $salaryLevel->created_at->format('d M Y') }}</td>
-        </tr>
-        <tr>
-            <th>Updated At</th>
-            <td>{{ $salaryLevel->updated_at->format('d M Y') }}</td>
-        </tr>
-    </table>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-md-4">Basic Amount</dt>
+                <dd class="col-md-8">{{ number_format($salaryLevel->basic_amount, 2) }} {{ $salaryLevel->currency }}</dd>
 
-    <a href="{{ route('salary_levels.index') }}" class="btn btn-secondary">Back</a>
-    <a href="{{ route('salary_levels.edit', $salaryLevel->id) }}" class="btn btn-warning">Edit</a>
+                <dt class="col-md-4">Insurance</dt>
+                <dd class="col-md-8">{{ number_format($salaryLevel->insurance_amount, 2) }}</dd>
+
+                <dt class="col-md-4">NSSF</dt>
+                <dd class="col-md-8">{{ number_format($salaryLevel->nssf, 2) }}</dd>
+
+                <dt class="col-md-4">Tax</dt>
+                <dd class="col-md-8">{{ number_format($salaryLevel->tax, 2) }}</dd>
+
+                <dt class="col-md-4">Net Amount Due</dt>
+                <dd class="col-md-8 fw-bold text-success">{{ number_format($salaryLevel->net_amount_due, 2) }} {{ $salaryLevel->currency }}</dd>
+
+                <dt class="col-md-4">Status</dt>
+                <dd class="col-md-8">
+                    <span class="badge bg-{{ $salaryLevel->status === 'active' ? 'success' : 'secondary' }}">
+                        {{ ucfirst($salaryLevel->status) }}
+                    </span>
+                </dd>
+
+                @if($salaryLevel->description)
+                <dt class="col-md-4">Description</dt>
+                <dd class="col-md-8">{{ $salaryLevel->description }}</dd>
+                @endif
+
+                <dt class="col-md-4">Created</dt>
+                <dd class="col-md-8">{{ $salaryLevel->created_at->format('d M, Y H:i') }}</dd>
+            </dl>
+
+            <div class="text-end">
+                <a href="{{ route('salary_levels.edit', $salaryLevel->id) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="{{ route('salary_levels.index') }}" class="btn btn-secondary">Back</a>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

@@ -91,6 +91,14 @@
     <div class="card-header bg-light py-3">
         <h5 class="mb-0 text-primary">Clients Belonging to {{ $group->group_name }}</h5>
     </div>
+        <div class="card shadow-lg mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center bg-light py-3">
+            <h5 class="mb-0 text-primary"></h5>
+
+            <a href="{{ route('clients.create', ['group_id' => $group->id]) }}" class="btn btn-primary btn-sm d-flex align-items-center">
+             <i class="bi bi-plus-lg me-1"></i> Add New Client to The group
+            </a>
+        </div>
     <div class="card-body">
         @if($group->clients->isEmpty())
             <p class="text-muted">No clients assigned to this group.</p>

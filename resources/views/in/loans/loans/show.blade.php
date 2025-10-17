@@ -17,25 +17,62 @@
             <!-- <a href="{{ route('loans.edit', $loan->id) }}" class="btn btn-warning">
                 <i class="bi bi-pencil"></i> Edit Loan
             </a> -->
+            <a href="{{ route('client-loan-photos.create', ['loan_id' => $loan->id]) }}" class="btn btn-primary">
+            + Add Photo
+            </a>
             <a href="{{ route('loans.index') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Back to List
             </a>
         </div>
     </div>
+    
 
-    <!-- Status Alert -->
-    <div class="alert alert-{{ $loan->status === 'active' ? 'success' : ($loan->status === 'pending' ? 'warning' : 'secondary') }} d-flex justify-content-between align-items-center">
-        <div>
-            <strong>Loan Status:</strong> 
-            <span class="text-uppercase fw-bold">{{ $loan->status }}</span>
-            @if($loan->closed_at)
-                • Closed on: {{ $loan->closed_at->format('M d, Y') }}
-            @endif
-        </div>
-        <span class="badge bg-{{ $loan->is_active ? 'success' : 'danger' }}">
-            {{ $loan->is_active ? 'ACTIVE' : 'INACTIVE' }}
-        </span>
+@php
+    switch ($loan->status) {
+        case 'active':
+            $alertClass = 'success';
+            $statusLabel = 'Active';
+            break;
+        case 'pending':
+            $alertClass = 'warning';
+            $statusLabel = 'Pending Approval';
+            break;
+        case 'approved':
+            $alertClass = 'info';
+            $statusLabel = 'Approved';
+            break;
+        case 'closed':
+            $alertClass = 'secondary';
+            $statusLabel = 'Closed';
+            break;
+        case 'refunded':
+            $alertClass = 'primary';
+            $statusLabel = 'Refunded';
+            break;
+        case 'rejected':
+            $alertClass = 'danger';
+            $statusLabel = 'Rejected';
+            break;
+        default:
+            $alertClass = 'light';
+            $statusLabel = ucfirst($loan->status);
+            break;
+    }
+@endphp
+
+    <div class="alert alert-{{ $alertClass }} d-flex justify-content-between align-items-center">
+    <div>
+        <strong>Loan Status:</strong>
+        <span class="text-uppercase fw-bold">{{ $statusLabel }}</span>
+        @if($loan->closed_at)
+            <span class="ms-2 text-muted small">• Closed on {{ $loan->closed_at->format('M d, Y') }}</span>
+        @endif
     </div>
+
+    <span class="badge rounded-pill bg-{{ $loan->is_active ? 'success' : 'danger' }}">
+        {{ $loan->is_active ? 'ACTIVE' : 'INACTIVE' }}
+    </span>
+</div>
 
     <div class="row">
         <!-- Left Column: Basic Information -->
@@ -84,10 +121,10 @@
                         <dd class="col-sm-7">{{ $loan->client?->first_name }} {{ $loan->client?->last_name }}</dd>
 
                         <dt class="col-sm-5">Group</dt>
-                        <dd class="col-sm-7">{{ $loan->group?->name ?? 'N/A' }}</dd>
+                        <dd class="col-sm-7">{{ $loan->group?->group_name ?? 'N/A' }}</dd>
 
                         <dt class="col-sm-5">Group Center</dt>
-                        <dd class="col-sm-7">{{ $loan->groupCenter?->name ?? 'N/A' }}</dd>
+                        <dd class="col-sm-7">{{ $loan->groupCenter?->center_name ?? 'N/A' }}</dd>
                     </dl>
                 </div>
             </div>
@@ -128,6 +165,22 @@
                 </div>
             </div>
 
+    @php
+        // Get the authenticated user
+        $user = Auth::user();
+        
+        // Define simple permission variables using the new methods
+        $canManageAll = $user->isAdmin();
+        $canManageHisData = $user->isLoanOfficer();
+        $canManageLoans = $user->isAdmin() || $user->isManagement();
+        $canViewClients = $user->isAdmin() || $user->isManagement() || $user->hasRole('marketing_officer');
+        $canManageGroups = $user->isAdmin() || $user->isManagement() || $user->isLoanOfficer() || $user->hasRole('marketing_officer');
+        $canManageFinance = $user->isAdmin() || $user->isManagement() || $user->isFinance();
+        $canManageHR = $user->isAdmin() || $user->isManagement() || $user->isHR();
+        $isClient = $user->isClient();
+
+    @endphp
+@if($canManageLoans)
             <!-- Pre closure fee Card -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-warning">
@@ -158,6 +211,54 @@
 
                 </div>
             </div>
+
+<!-- Refunding Information Card -->
+<div class="card shadow border-0 mb-4">
+  <div class="card-header bg-warning text-dark d-flex align-items-center">
+    <i class="bi bi-receipt me-2"></i>
+    <h5 class="card-title mb-0">Refunding Information</h5>
+  </div>
+
+  <div class="card-body">
+    {{-- Set Preclosure Fee --}}
+    <form action="{{ route('loans.refund.set', $loan->id) }}" method="POST" class="mb-3">
+      @csrf
+      <div class="mb-3">
+        <label for="refunding_reason" class="form-label fw-semibold">Reason for Refund</label>
+        <textarea 
+          id="refunding_reason" 
+          name="refunding_reason" 
+          class="form-control" 
+          rows="3" 
+          placeholder="Enter reason for refund..."
+          required
+        ></textarea>
+      </div>
+      <button 
+        type="submit" 
+        class="btn btn-outline-primary btn-sm px-4" 
+        onclick="return confirm('Please confirm — do you want to set this loan as refunded?')"
+      >
+        <i class="bi bi-check-circle"></i> Set Refund
+      </button>
+    </form>
+
+    <!-- {{-- Mark Preclosure as Paid --}}
+    @if($loan->preclosure_fee > 0 && $loan->preclosure_fee_paid < $loan->preclosure_fee)
+      <form action="{{ route('loans.preclosure.pay', $loan->id) }}" method="POST" class="d-inline">
+        @csrf
+        <button 
+          type="submit" 
+          class="btn btn-sm btn-success px-4" 
+          onclick="return confirm('Please confirm — do you want to mark as paid?')"
+        >
+          <i class="bi bi-cash-stack"></i> Mark as Paid
+        </button>
+      </form>
+    @endif -->
+  </div>
+</div>
+@endif
         </div>
 
         <!-- Right Column: Financial & Dates -->
@@ -186,12 +287,13 @@
                     </div>
 
                     <dl class="row mb-0">
+@if($canManageLoans)
                         <dt class="col-sm-6">Interest Rate</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->interest_rate ?? 0, 2) }}%</dd>
 
                         <dt class="col-sm-6">Interest Amount</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->interest_amount ?? 0, 2) }}</dd>
-
+@endif
                         <dt class="col-sm-6">Client Payable Frequency</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->client_payable_frequency ?? 0, 2) }}</dd>
 
@@ -257,23 +359,35 @@
                     <dl class="row mb-0">
                         <dt class="col-sm-6">Principal Due</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->principal_due ?? 0, 2) }}</dd>
-
+@if($canManageLoans)
                         <dt class="col-sm-6">Interest Due</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->interest_due ?? 0, 2) }}</dd>
 
                         <dt class="col-sm-6">Total Due</dt>
                         <dd class="col-sm-6 text-end fw-bold">{{ number_format($loan->total_due, 2) }}</dd>
-
+@endif
                         <hr class="my-2">
 
                         <dt class="col-sm-6">Amount Paid</dt>
                         <dd class="col-sm-6 text-end text-success">{{ number_format($loan->amount_paid ?? 0, 2) }}</dd>
 
-                        <dt class="col-sm-6">Penalty Fee Paid</dt>
-                        <dd class="col-sm-6 text-end">{{ number_format($loan->penalty_fee_paid ?? 0, 2) }}</dd>
+                        <dt class="col-sm-6">Membership Fee Paid</dt>
+                        <dd class="col-sm-6 text-end">{{ number_format($loan->membership_fee_paid ?? 0, 2) }}</dd>
+                       
+                        <dt class="col-sm-6">Loan Officer Fee Paid</dt>
+                        <dd class="col-sm-6 text-end">{{ number_format($loan->officer_visit_fee_paid ?? 0, 2) }}</dd>
+                        
+                        <dt class="col-sm-6">Insurance Fee Paid</dt>
+                        <dd class="col-sm-6 text-end">{{ number_format($loan->insurance_fee_paid ?? 0, 2) }}</dd>
 
                         <dt class="col-sm-6">Preclosure Fee Paid</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->preclosure_fee_paid ?? 0, 2) }}</dd>
+
+                        <dt class="col-sm-6">Amount with Preclosure</dt>
+                        <dd class="col-sm-6 text-end">{{ number_format($loan->amount_with_preclosure ?? 0, 2) }}</dd>
+                    
+                        <dt class="col-sm-6">Amount Refunded</dt>
+                        <dd class="col-sm-6 text-end">{{ number_format($loan->amount_with_refund ?? 0, 2) }}</dd>
 
                         <dt class="col-sm-6">Other Fee Paid</dt>
                         <dd class="col-sm-6 text-end">{{ number_format($loan->other_fee_paid ?? 0, 2) }}</dd>
@@ -289,17 +403,18 @@
                         <dd class="col-sm-6 text-end fw-bold fs-5 text-danger">
                             {{ number_format($loan->outstanding_balance ?? 0, 2) }}
                         </dd>
-
+@if($canManageLoans)
                         <dt class="col-sm-6">Profit/Loss</dt>
                         <dd class="col-sm-6 text-end fw-bold text-{{ $loan->profit_loss_amount >= 0 ? 'success' : 'danger' }}">
                             {{ number_format($loan->profit_loss_amount, 2) }}
                         </dd>
+@endif
                     </dl>
                 </div>
             </div>
         </div>
     </div>
-
+@if($canManageLoans)
     <!-- System Information & Closure Section -->
     <div class="row">
         <div class="col-12">
@@ -340,7 +455,7 @@
         </div>
     </div>
 
-
+@endif
 
     <div class="alert alert-info bg-info text-white mt-3"> <h3>Repayment Schedule for Loan {{ $loan->loan_number }}</h3></div>
 

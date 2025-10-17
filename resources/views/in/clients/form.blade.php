@@ -10,16 +10,20 @@
             <div class="card-body">
                 <div class="row g-3">
 
-                    <div class="col-md-4">
-                        <label for="group_id" class="form-label">Client Group</label>
-                        <select id="group_id" name="group_id" class="form-select @error('group_id') is-invalid @enderror">
-                            <option value="">-- Select Group --</option>
-                            @foreach($centres as $centre)
-                                <option value="{{ $centre->id }}" {{ old('group_id', $client->group_id ?? '') == $centre->id ? 'selected' : '' }}>{{ $centre->group_name }} ({{ $centre->group_code }})</option>
-                            @endforeach
-                        </select>
-                        @error('group_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+<div class="col-md-4">
+    <label for="group_id" class="form-label">Client Group</label>
+    <select id="group_id" name="group_id" class="form-select @error('group_id') is-invalid @enderror">
+        <option value="">-- Select Group --</option>
+        @foreach($centres as $centre)
+            <option value="{{ $centre->id }}"
+                {{ (old('group_id', $selectedGroupId ?? ($client->group_id ?? '')) == $centre->id) ? 'selected' : '' }}>
+                {{ $centre->group_name }} ({{ $centre->group_code }})
+            </option>
+        @endforeach
+    </select>
+    @error('group_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+</div>
+
                     
                     <div class="col-md-4">
                         <label for="client_type" class="form-label">Client Type <span class="text-danger">*</span></label>
@@ -359,14 +363,14 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                   <div class="col-md-6">
+<div class="col-md-6">
     <label for="assigned_loan_officer_id" class="form-label">Assigned Loan Officer</label>
     <select id="assigned_loan_officer_id" name="assigned_loan_officer_id"
         class="form-select @error('assigned_loan_officer_id') is-invalid @enderror">
         <option value="">-- Select Officer --</option>
         @foreach($loanOfficers as $loanOfficer)
             <option value="{{ $loanOfficer->id }}"
-                {{ old('assigned_loan_officer_id', $client->assigned_loan_officer_id ?? '') == $loanOfficer->id ? 'selected' : '' }}>
+                {{ (old('assigned_loan_officer_id', $selectedLoanOfficerId ?? ($client->assigned_loan_officer_id ?? '')) == $loanOfficer->id) ? 'selected' : '' }}>
                 {{ $loanOfficer->first_name }} {{ $loanOfficer->last_name }}
             </option>
         @endforeach
@@ -375,6 +379,7 @@
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
+
 
                     <div class="col-md-6 d-flex align-items-center pt-3">
                         <div class="form-check form-switch">

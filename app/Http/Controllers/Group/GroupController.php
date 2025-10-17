@@ -15,36 +15,54 @@ class GroupController extends Controller
     /**
      * Display a listing of the groups.
      */
+
     public function index(Request $request)
     {
+        $user = auth()->user();
         $search = $request->input('search');
 
-        $groups = Group::when($search, function ($query, $search) {
-            $query->where('group_name', 'like', "%{$search}%")
-                  ->orWhere('group_code', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
-        })
-        ->orderBy('id', 'desc')
-        ->paginate(10);
+        $groups = Group::query()
+            ->when($search, function ($query, $search) {
+                $query->where('group_name', 'like', "%{$search}%")
+                      ->orWhere('group_code', 'like', "%{$search}%")
+                      ->orWhere('location', 'like', "%{$search}%");
+            })
+            // Restrict Loan Officer's view
+            ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+                // Assuming `Employee` is linked to `User` via user_id
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $query->where('credit_officer_id', $employee->id);
+                }
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         return view('in.groups.index', compact('groups', 'search'));
     }
 
+
     /**
      * Show the form for creating a new group.
      */
-    public function create()
+
+    public function create(Request $request)
     {
-        $groupCenters = GroupCenter::where('is_active', 1)->get();
-        $creditOfficers = Employee::where('position', 'Loan Officer')->get();
-        return view('in.groups.create', compact('creditOfficers', 'groupCenters'));
-    }
+    $groupCenters = GroupCenter::where('is_active', 1)->get();
+    $creditOfficers = Employee::where('is_active', true)->get();
+
+    $selectedCenterId = $request->get('center_id'); // capture if passed from center show page
+    $selectedCreditOfficerId = $request->get('credit_officer_id'); // capture if passed from center show page
+
+    return view('in.groups.create', compact('creditOfficers', 'groupCenters', 'selectedCenterId', 'selectedCreditOfficerId'));
+   }
+
 
     /**
      * Store a newly created group.
      */
-public function store(Request $request)
-{
+    public function store(Request $request)
+    {
     $validated = $request->validate([
         'group_center_id' => 'required|exists:group_centers,id',
         'group_name' => 'required|string|max:255',
@@ -73,8 +91,8 @@ public function store(Request $request)
 
     Group::create($validated);
 
-    return redirect()->route('groups.index')->with('success', 'Group created successfully!');
-}
+    return back()->with('success', 'Group ' . $validated['group_name'] . ' created successfully!');
+    }
 
 
     /**
@@ -94,7 +112,7 @@ public function show(Group $group)
     public function edit(Group $group)
     {
         $groupCenters = GroupCenter::where('is_active', 1)->get();
-        $creditOfficers = Employee::where('position', 'Loan Officer')->get();
+        $creditOfficers = Employee::where('is_active', true)->get();
         return view('in.groups.edit', compact('group', 'creditOfficers', 'groupCenters'));
     }
 
@@ -120,6 +138,8 @@ public function show(Group $group)
 
         return redirect()->route('groups.index')->with('success', 'Group updated successfully!');
     }
+
+    
 
     /**
      * Remove the specified group.

@@ -11,35 +11,31 @@ class SalaryLevel extends Model
 
     protected $fillable = [
         'name',
+        'basic_amount',
+        'insurance_amount',
+        'nssf',
+        'tax',
+        'net_amount_due',
         'description',
-        'default_salary',
         'currency',
-        'status',
         'created_by',
         'updated_by',
+        'status',
     ];
 
-    // Relations
-
-    public function employeeSalaries()
-    {
-        return $this->hasMany(EmployeeSalary::class);
-    }
-
+    /**
+     * Creator relationship
+     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Updater relationship
+     */
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    // Scopes
-
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
     }
 }

@@ -11,21 +11,30 @@ class EmployeeSalaryPayment extends Model
 
     protected $fillable = [
         'employee_salary_id',
-        'amount_paid',
+        'employee_id',
         'payment_date',
-        'payment_method',
+        'amount_paid',
         'currency',
-        'status',
+        'payment_method',
+        'reference_number',
         'attachment',
+        'notes',
         'created_by',
         'updated_by',
+        'status',
     ];
 
-    // Relations
-
-    public function salary()
+    /**
+     * Relationships
+     */
+    public function employeeSalary()
     {
-        return $this->belongsTo(EmployeeSalary::class, 'employee_salary_id');
+        return $this->belongsTo(EmployeeSalary::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     public function creator()
@@ -36,17 +45,5 @@ class EmployeeSalaryPayment extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    // Scopes
-
-    public function scopePaid($query)
-    {
-        return $query->where('status', 'paid');
-    }
-
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
     }
 }

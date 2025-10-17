@@ -21,6 +21,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
+use App\Http\Controllers\User\UserController;
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('users', UserController::class);
+    Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('users/{user}/toggle-lock', [UserController::class, 'toggleLock'])->name('users.toggle-lock');
+    Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+
+});
+
 
 
 use App\Http\Controllers\Dashboard\DashboardController;
@@ -54,6 +64,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('employees.referees.store');
     Route::delete('referees/{referee}', [EmployeeManagementController::class, 'deleteReferee'])
         ->name('referees.destroy');
+
+    Route::get('/search-officers', [EmployeeManagementController::class, 'searchOfficers'])->name('search.officers');
+
 });
 
 use App\Http\Controllers\Group\GroupController;
@@ -62,33 +75,38 @@ Route::resource('groups', GroupController::class);
 
 });
 use App\Http\Controllers\Group\GroupMemberController;
-
+Route::middleware(['auth'])->group(function () {
 Route::get('/groups/{group}/members/create', [GroupMemberController::class, 'create'])->name('group_members.create');
 Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])->name('group_members.store');
 Route::delete('/group_members/{member}', [GroupMemberController::class, 'destroy'])->name('group_members.destroy');
+});
 
 use App\Http\Controllers\Client\ClientController;
+Route::middleware(['auth'])->group(function () {
 Route::resource('clients', ClientController::class);
 Route::get('/clients/{client}/export', [ClientController::class, 'export'])->name('clients.export');
 Route::resource('guarantors', App\Http\Controllers\Client\ClientGuarantorController::class);
+});
 
 use App\Http\Controllers\Group\GroupCenterController;
+Route::middleware(['auth'])->group(function () {
 Route::resource('group_centers', GroupCenterController::class);
-
+});
 
 use App\Http\Controllers\Loan\LoanCategoryController;
 use App\Http\Controllers\Loan\LoanPaymentController;
 use App\Http\Controllers\Loan\LoanController;
-
+Route::middleware(['auth'])->group(function () {
 Route::resource('loan_categories', LoanCategoryController::class);
 Route::patch('loan_categories/{loanCategory}/toggle', [LoanCategoryController::class, 'toggleStatus'])
      ->name('loan_categories.toggle');
 Route::resource('loans', LoanController::class);
 Route::post('/loans/{id}/preclosure/set', [LoanController::class, 'setPreclosureFee'])->name('loans.preclosure.set');
 Route::post('/loans/{id}/preclosure/pay', [LoanController::class, 'markPreclosurePaid'])->name('loans.preclosure.pay');
+Route::post('/loans/{id}/refunding/set', [LoanController::class, 'setRefund'])->name('loans.refund.set');
 
 Route::resource('loan_payments', LoanPaymentController::class);
-
+});
 
 use App\Http\Controllers\Employee\EmployeeExportController;
 Route::middleware(['auth'])->group(function () {
@@ -103,24 +121,22 @@ Route::middleware(['auth'])->group(function () {
         ->name('employees.export.csv');
 });
 
-
 // NEW CLIENT REQUST CONTROLLER
-
 
 use App\Http\Controllers\Loan\LoanRequestNewClientController;
 use App\Http\Controllers\Loan\LoanRequestContinuengClientController;
-Route::resource('loan_request_continueng_client', LoanRequestContinuengClientController::class);
+use App\Http\Controllers\Loan\LoanOfficerLoansController;
+Route::middleware(['auth'])->group(function () {
+Route::resource('loan_request_continueng_client', LoanRequestContinuengClientController::class)
+    ->parameters(['loan_request_continueng_client' => 'loan']);;
 
 Route::resource('loan_request_new_client', LoanRequestNewClientController::class)
-    ->names([
-        'index' => 'loan_request_new_client.index',
-        'create' => 'loan_request_new_client.create',
-        'store' => 'loan_request_new_client.store',
-        'show' => 'loan_request_new_client.show',
-        'edit' => 'loan_request_new_client.edit', // This is the crucial line
-        'update' => 'loan_request_new_client.update',
-        'destroy' => 'loan_request_new_client.destroy',
-    ]);
+    ->parameters(['loan_request_new_client' => 'loan']);
+
+Route::resource('loan-pfficers-loans', LoanOfficerLoansController::class)
+    ->parameters(['loan-pfficers-loans' => 'loan']);
+});
+
 
 use App\Http\Controllers\Loan\LoanApprovalController;
 
@@ -132,28 +148,39 @@ Route::prefix('loan-approvals')->middleware(['auth'])->group(function () {
 });
 
 use App\Http\Controllers\Loan\RepaymentScheduleController;
+Route::middleware(['auth'])->group(function () {
 Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
 Route::post('/repayments/pay/{id}', [RepaymentScheduleController::class, 'pay'])->name('repayments.pay');
 Route::post('/schedules/{id}/penalty', [RepaymentScheduleController::class, 'addPenalty'])->name('schedules.addPenalty');
-
+});
 // Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
 
 use App\Http\Controllers\Donation\DonationController;
+use App\Http\Controllers\Expense\ExpenseCategoryController;
+use App\Http\Controllers\Expense\ExpenseController;
+use App\Http\Controllers\Salary\SalaryLevelController;
+use App\Http\Controllers\Salary\EmployeeSalaryController;
+use App\Http\Controllers\Salary\EmployeeSalaryPaymentController;
+Route::middleware(['auth'])->group(function () {
 Route::resource('donations', DonationController::class);
 
-use App\Http\Controllers\Expense\ExpenseCategoryController;
 Route::resource('expense-categories', ExpenseCategoryController::class);
 
-use App\Http\Controllers\Expense\ExpenseController;
 Route::resource('expenses', ExpenseController::class);
+Route::get('/expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
+Route::get('/expenses/export-excel', [ExpenseController::class, 'exportExcel'])->name('expenses.export.excel');
+Route::get('/expenses/export-pdf', [ExpenseController::class, 'exportPDF'])->name('expenses.export.pdf');
 
-use App\Http\Controllers\Salary\SalaryLevelController;
 Route::resource('salary_levels', SalaryLevelController::class);
 
-use App\Http\Controllers\Salary\EmployeeSalaryController;
 Route::resource('employee_salaries', EmployeeSalaryController::class);
+Route::get('/employees/search', [EmployeeSalaryController::class, 'searchEmployees'])->name('employees.search');
 
-use App\Http\Controllers\Salary\EmployeeSalaryPaymentController;
+Route::resource('employee_salary_payments', EmployeeSalaryPaymentController::class);
+
+});
+
+
 Route::prefix('employee-payments')->name('employee_payments.')->group(function () {
     Route::get('/', [EmployeeSalaryPaymentController::class, 'index'])->name('index');
     Route::get('/{id}/create', [EmployeeSalaryPaymentController::class, 'create'])->name('create');
@@ -165,16 +192,20 @@ Route::prefix('employee-payments')->name('employee_payments.')->group(function (
 
 
 use App\Http\Controllers\Loan\ClientLoanController;
+Route::middleware(['auth'])->group(function () {
 Route::resource('client_loans', ClientLoanController::class);
 Route::post('client_loans/{clientLoan}/close', [ClientLoanController::class, 'closeLoan'])->name('client_loans.close');
+});
 
 use App\Http\Controllers\Loan\DailyCollectionController;
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('daily_collections', DailyCollectionController::class);
 });
-Route::resource('client-loan-photos', App\Http\Controllers\Loan\ClientLoanPhotoController::class);
 
+Route::middleware(['auth'])->group(function () {
+Route::resource('client-loan-photos', App\Http\Controllers\Loan\ClientLoanPhotoController::class);
+});
 // Add these routes to your web.php file
 
 use App\Http\Controllers\Loan\LoanDashboardController;
@@ -185,6 +216,41 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/loans/export/excel', [LoanDashboardController::class, 'exportExcel'])->name('loans.export.excel');
     Route::get('/loans/export/pdf', [LoanDashboardController::class, 'exportPdf'])->name('loans.export.pdf');
 });
+
+
+
+use App\Http\Controllers\Loan\LoanReportController;
+use App\Http\Controllers\Loan\CollectionSummaryController;
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/collections/summary', [CollectionSummaryController::class, 'index'])->name('collections.summary.index');
+    Route::get('/collections/summary/export/excel', [CollectionSummaryController::class, 'exportExcel'])->name('collections.summary.export.excel');
+    Route::get('/collections/summary/export/pdf', [CollectionSummaryController::class, 'exportPdf'])->name('collections.summary.export.pdf');
+    Route::get('/collections/summary/export/pdfwithnodata', [CollectionSummaryController::class, 'exportPdfWithNoData'])->name('collections.summary.export.pdfwithnodata');
+});
+
+
+Route::prefix('reports/loans')->name('reports.loans.')->group(function () {
+    // Main report page
+    Route::get('/', [LoanReportController::class, 'index'])->name('index');
+    
+    // Trending data for graph (AJAX)
+    Route::get('/trending-data', [LoanReportController::class, 'getTrendingData'])->name('trending');
+    
+    // Export routes
+    Route::get('/export/excel', [LoanReportController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf', [LoanReportController::class, 'exportPdf'])->name('export.pdf');
+    Route::get('/print', [LoanReportController::class, 'print'])->name('print');
+});
+
+// API routes for cascading dropdowns
+Route::prefix('api')->group(function () {
+    Route::get('/groups-by-center/{centerId}', [LoanReportController::class, 'getGroupsByCenter']);
+    Route::get('/clients-by-group/{groupId}', [LoanReportController::class, 'getClientsByGroup']);
+});
+
+
 // Add these routes to your routes/web.php file
 
 

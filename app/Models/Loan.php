@@ -23,12 +23,11 @@ class Loan extends Model
         'client_id',
         'collection_officer_id',
         'loan_category_id',
-        'loan_number',
 
-        // client requests
+        // Core Loan Information
+        'loan_number',
         'amount_requested',
         'client_payable_frequency',
-        'status',
 
         // approval and fees
         'amount_disbursed',
@@ -38,6 +37,8 @@ class Loan extends Model
         'other_fee',
         'penalty_fee',
         'preclosure_fee',
+
+        // Interest and Terms
         'interest_rate',
         'interest_amount',
         'repayment_frequency',
@@ -47,29 +48,45 @@ class Loan extends Model
         'principal_due',
         'interest_due',
         'disbursement_date',
+        'total_due',
 
         // repayments
         'amount_paid',
-        'preclosure_fee_paid',
-        'penalty_fee_paid',
         'membership_fee_paid',
         'officer_visit_fee_paid',
         'insurance_fee_paid',
+        'preclosure_fee_paid',
+        'penalty_fee_paid',
         'other_fee_paid',
 
-        // tracking & balance
-        'outstanding_balance',
+       // Date tracking and outstanding balance
         'start_date',
         'end_date',
         'days_left',
 
         // closure
+        'amount_with_preclosure',
         'closed_at',
         'closure_reason',
+
+        // Refunding reason
+        'amount_with_refund',
+        'refunded_at',
+        'refunding_reason',
+        'refunded_by',
+
+        // totals
+        'total_fees',
+        'total_repayable',
+        'total_amount_paid',
+        'outstanding_balance',
+        'total_profit',
+        'status',
 
         // system fields
         'currency',
         'created_by',
+        'approved_at',
         'approved_by',
         'updated_by',
         'is_active',
@@ -105,7 +122,9 @@ class Loan extends Model
         'end_date' => 'date',
         'closed_at' => 'datetime',
         'created_at' => 'date',
+        'refunded_at' => 'date',
     ];
+
 
     /**
      * Define relationships.
@@ -131,7 +150,7 @@ class Loan extends Model
 
     public function groupCenter()
     {
-        return $this->belongsTo(GroupCenter::class);
+        return $this->belongsTo(GroupCenter::class, 'group_center_id');
     }
     public function collectionOfficer()
     {
@@ -157,6 +176,25 @@ class Loan extends Model
     {
         return $this->hasMany(RepaymentSchedule::class);
     }
+
+    public function createdBy()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
+
+public function approvedBy()
+{
+    return $this->belongsTo(User::class, 'approved_by');
+}
+
+public function updatedBy()
+{
+    return $this->belongsTo(User::class, 'updated_by');
+}
+public function refundeddBy()
+{
+    return $this->belongsTo(User::class, 'refunded_by');
+}
 
     /**
      * 🔢 Accessors & Calculations
@@ -186,8 +224,12 @@ class Loan extends Model
 
     public function getTotalAmountPaidAttribute()
     {
-        return ($this->penalty_fee_paid ?? 0)
+        return ($this->membership_fee_paid ?? 0)
+             + ($this->officer_visit_fee_paid ?? 0)
+             + ($this->insurance_fee_paid ?? 0)
+             + ($this->penalty_fee_paid ?? 0)
              + ($this->preclosure_fee_paid ?? 0)
+             + ($this->amount_with_preclosure ?? 0)
              + ($this->amount_paid ?? 0)
              + ($this->other_fee_paid ?? 0);
     }
@@ -195,15 +237,13 @@ class Loan extends Model
     public function getProfitLossAmountAttribute()
     {
         return $this->total_amount_paid
-             + ($this->membership_fee ?? 0)
-             + ($this->insurance_fee ?? 0)
-             + ($this->officer_visit_fee ?? 0)
+             - $this->amount_with_refund
              - $this->amount_disbursed;
     }
 
     public function getOutstandingBalanceAttribute()
     {
-    return max(0, $this->repayable_amount - $this->amount_paid);
+    return max(0, $this->repayable_amount - $this->total_amount_paid );
     }
 
     public function payments()

@@ -14,15 +14,54 @@ class LoanApprovalController extends Controller
     /**
      * Display list of pending loan requests.
      */
-    public function index()
-    {
-        $loans = Loan::with(['client', 'loanCategory'])
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->get();
+public function index(Request $request)
+{
+    $search = $request->input('search');
+    $status = $request->input('status', 'pending'); // optional filter
 
-        return view('in.loans.requests.loan_approvals.index', compact('loans'));
-    }
+    $loans = Loan::with([
+        'client', 
+        'group', 
+        'groupCenter', 
+        'loanCategory', 
+        'collectionOfficer', 
+        'createdBy', 
+        'approvedBy', 
+        'updatedBy'
+    ])
+    ->where('is_active', true)
+    ->when($status, fn($q) => $q->where('status', $status))
+    ->when($search, function ($query, $search) {
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('client', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('collectionOfficer', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('group', function ($q) use ($search) {
+                $q->where('group_name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('createdBy', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('approvedBy', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('updatedBy', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->orWhere('loan_number', 'like', "%{$search}%");
+        });
+    })
+    ->orderByDesc('created_at')
+    ->paginate(30);
+
+    return view('in.loans.requests.loan_approvals.index', compact('loans', 'search', 'status'));
+}
+
 
     /**
      * Show a single pending loan for approval.
@@ -44,6 +83,10 @@ public function approve(Request $request, $id)
 {
     $loan = Loan::findOrFail($id);
     $category = LoanCategory::findOrFail($loan->loan_category_id);
+
+if ($loan->amount_paid < 2 * $loan->principal_due) {
+    return redirect()->back()->with('error', 'Loan can’t be approved because the client has not started paying.');
+}
 
     if ($loan->status !== 'pending') {
         return redirect()->back()->with('error', 'Loan already approved or processed.');

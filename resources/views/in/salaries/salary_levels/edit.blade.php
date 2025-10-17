@@ -1,43 +1,30 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Salary Level')
+@section('page-title', 'Edit Salary Level')
+
 @section('content')
-<div class="container">
-    <h3>Edit Salary Level</h3>
-
-    <form action="{{ route('salary_levels.update', $salaryLevel->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div class="mb-3">
-            <label>Name <span class="text-danger">*</span></label>
-            <input type="text" name="name" class="form-control" required value="{{ old('name', $salaryLevel->name) }}">
+<div class="container py-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Edit: {{ $salaryLevel->name }}</h5>
         </div>
 
-        <div class="mb-3">
-            <label>Description</label>
-            <textarea name="description" class="form-control">{{ old('description', $salaryLevel->description) }}</textarea>
-        </div>
+        <div class="card-body">
+            <form action="{{ route('salary_levels.update', $salaryLevel->id) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-        <div class="mb-3">
-            <label>Default Salary</label>
-            <input type="number" step="0.01" name="default_salary" class="form-control" value="{{ old('default_salary', $salaryLevel->default_salary) }}">
-        </div>
+                @include('in.salaries.salary_levels.form', ['salaryLevel' => $salaryLevel])
 
-        <div class="mb-3">
-            <label>Currency</label>
-            <input type="text" name="currency" class="form-control" value="{{ old('currency', $salaryLevel->currency) }}">
+                <div class="text-end">
+                    <button type="submit" class="btn btn-warning text-white">
+                        <i class="bi bi-save me-1"></i> Update
+                    </button>
+                    <a href="{{ route('salary_levels.index') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label>Status</label>
-            <select name="status" class="form-control">
-                <option value="active" {{ $salaryLevel->status == 'active' ? 'selected' : '' }}>Active</option>
-                <option value="inactive" {{ $salaryLevel->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-warning">Update</button>
-        <a href="{{ route('salary_levels.index') }}" class="btn btn-secondary">Cancel</a>
-    </form>
+    </div>
 </div>
 @endsection

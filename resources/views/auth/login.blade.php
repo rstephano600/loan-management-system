@@ -5,12 +5,12 @@
 @section('auth-footer', 'Secure Access to Loan Management System')
 
 @section('auth-links')
-    <div class="d-flex justify-content-center gap-4">
+    <div class="d-flex justify-content-center gap-3"> 
         @if(Route::has('register'))
-            <a href="{{ route('register') }}">Create Account</a>
+            <a href="{{ route('register') }}" class="text-decoration-none">Create Account</a>
         @endif
         @if(Route::has('password.request'))
-            <a href="{{ route('password.request') }}">Forgot Password?</a>
+            <a href="{{ route('password.request') }}" class="text-decoration-none">Forgot Password?</a>
         @endif
     </div>
 @endsection
@@ -19,14 +19,14 @@
 @if(session('status'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="bi bi-check-circle me-2"></i>{{ session('status') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
 @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="bi bi-exclamation-triangle me-2"></i>{{ $errors->first() }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 

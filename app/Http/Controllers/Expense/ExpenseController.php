@@ -16,21 +16,43 @@ class ExpenseController extends Controller
     /**
      * Display a listing of expenses with search and pagination
      */
-    public function index(Request $request)
-    {
-        $query = Expense::with('category', 'creator');
+public function index(Request $request)
+{
+    $query = Expense::with(['category', 'creator']);
 
-        if ($request->filled('search')) {
-            $query->where('expense_title', 'LIKE', '%'.$request->search.'%')
-                  ->orWhereHas('category', function ($q) use ($request) {
-                      $q->where('name', 'LIKE', '%'.$request->search.'%');
-                  });
-        }
-
-        $expenses = $query->latest()->paginate(10)->withQueryString();
-
-        return view('in.expenses.expenses.index', compact('expenses'));
+    // 🔍 Search by title or category
+    if ($request->filled('search')) {
+        $query->where('expense_title', 'LIKE', '%'.$request->search.'%')
+              ->orWhereHas('category', function ($q) use ($request) {
+                  $q->where('name', 'LIKE', '%'.$request->search.'%');
+              });
     }
+
+    // 📅 Filter by date range
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereBetween('expense_date', [
+            $request->start_date, 
+            $request->end_date
+        ]);
+    }
+
+    // 🏷️ Filter by category
+    if ($request->filled('category_id')) {
+        $query->where('expense_category_id', $request->category_id);
+    }
+
+    // 🧾 Fetch filtered results
+    $expenses = $query->latest()->paginate(20)->withQueryString();
+
+    // 💰 Calculate total amount used in current filter
+    $totalUsed = $query->sum('total_amount');
+
+    // 🗂 Fetch categories for filter dropdown
+    $categories = \App\Models\ExpenseCategory::all();
+
+    return view('in.expenses.expenses.index', compact('expenses', 'totalUsed', 'categories'));
+}
+
 
     /**
      * Show form for creating a new expense
@@ -176,13 +198,54 @@ class ExpenseController extends Controller
 
         return redirect()->route('expenses.index')->with('success', 'Expense updated successfully.');
     }
+public function export(Request $request)
+{
+    $query = Expense::with('category');
 
+    if ($request->filled('category_id')) {
+        $query->where('expense_category_id', $request->category_id);
+    }
+
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereBetween('expense_date', [$request->start_date, $request->end_date]);
+    }
+
+    $expenses = $query->get(['expense_title', 'total_amount', 'expense_date']);
+
+    $filename = 'expenses_export_' . now()->format('Y_m_d_His') . '.csv';
+
+    $handle = fopen('php://temp', 'r+');
+    fputcsv($handle, ['Title', 'Amount', 'Date']);
+
+    foreach ($expenses as $expense) {
+        fputcsv($handle, [$expense->expense_title, $expense->total_amount, $expense->expense_date]);
+    }
+
+    rewind($handle);
+    return response(stream_get_contents($handle), 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=$filename",
+    ]);
+}
+
+public function exportExcel()
+    {
+        return Excel::download(new ExpensesExport, 'expenses_by_category.xlsx');
+    }
+
+    public function exportPDF()
+    {
+        $expensesByCategory = Expense::with('items')->get()->groupBy('category');
+        $pdf = Pdf::loadView('exports.expenses', compact('expensesByCategory'))
+            ->setPaper('a4', 'portrait');
+        return $pdf->download('expenses_by_category.pdf');
+    }
     /**
      * Delete expense with items
      */
     public function destroy(Expense $expense)
     {
-        $expense->delete();
+        // $expense->delete();
         return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully.');
     }
 }

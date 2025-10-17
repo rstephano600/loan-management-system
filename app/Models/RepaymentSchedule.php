@@ -19,15 +19,33 @@ class RepaymentSchedule extends Model
         'installment_number',
         'due_day_number',
         'due_date',
+
+        // Amounts Due (Amortization Plan)
         'principal_due',
         'interest_due',
         'penalty_due',
+        'total_due',
+        'total_proncipal_penalty_due',
+
+        // Allocated Paid Amounts (Captured via payment allocations)
         'principal_paid',
         'interest_paid',
         'penalty_paid',
+        'total_paid',
         'paid_date',
+        'total_proncipal_penalty_paid',
+
         'status',
         'payment_method',
+
+        'is_start_date',
+        'is_end_date',
+        'days_left',
+        'is_skipped',
+        'skip_reason',
+        'skipped_by',
+        'skipped_at',
+
         'created_by',
         'is_paid',
         'paid_by',

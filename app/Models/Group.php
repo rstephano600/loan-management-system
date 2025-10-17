@@ -23,16 +23,28 @@ class Group extends Model
         'updated_by',
     ];
 
-    // Relationships
-    public function groupCenter()
+        protected $casts = [
+        'is_active' => 'boolean',
+        'registration_date' => 'date',
+    ];
+
+    public function clients()
     {
-        return $this->belongsTo(GroupCenter::class, 'group_center_id');
+        return $this->hasMany(Client::class);
     }
 
     public function creditOfficer()
     {
         return $this->belongsTo(Employee::class, 'credit_officer_id');
     }
+
+    // Relationships
+    public function groupCenter()
+    {
+        return $this->belongsTo(GroupCenter::class, 'group_center_id');
+    }
+
+
     public function members()
     {
     return $this->hasMany(GroupMember::class);
@@ -46,9 +58,10 @@ class Group extends Model
     }
 
     // Has many clients
-    public function clients()
+
+public function center()
     {
-        return $this->hasMany(Client::class, 'group_id');
+        return $this->belongsTo(GroupCenter::class, 'group_center_id');
     }
 
 

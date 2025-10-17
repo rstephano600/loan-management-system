@@ -128,6 +128,31 @@ class User extends Authenticatable
         return $query->whereIn('role', (array) $role);
     }
 
+     protected static function booted()
+    {
+        static::creating(function ($user) {
+            $user->generateName();
+        });
+
+        static::updating(function ($user) {
+            $user->generateName();
+        });
+
+    }
+
+    public function generateName()
+    {
+        // Check if user is linked to an employee
+        if ($this->employee) {
+            $this->name = trim("{$this->employee->last_name}, {$this->employee->first_name} {$this->employee->middle_name}");
+        }
+
+        // Or if linked to a client
+        elseif ($this->client) {
+            $this->name = trim("{$this->client->last_name}, {$this->client->first_name} {$this->client->middle_name}");
+        }
+    }
+
     /**
      * ===========================================
      * ROLE CHECK HELPERS

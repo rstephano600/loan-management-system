@@ -4,107 +4,138 @@ namespace App\Http\Controllers\Salary;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Employee;
-use App\Models\EmployeeSalary;
 use App\Models\EmployeeSalaryPayment;
+use App\Models\EmployeeSalary;
+use App\Models\Employee;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeSalaryPaymentController extends Controller
 {
     /**
-     * Display list of salaries ready for payment.
+     * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $search = $request->get('search');
+        $query = EmployeeSalaryPayment::with(['employee', 'employeeSalary']);
 
-        $salaries = EmployeeSalary::with(['employee', 'salaryLevel'])
-            ->when($search, function ($query, $search) {
-                $query->whereHas('employee', function ($q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%");
-                });
-            })
-            ->where('status', 'active')
-            ->latest()
-            ->paginate(10);
+        // 🔍 Filtering by employee or date
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', $request->employee_id);
+        }
 
-        $dueSalaries = EmployeeSalary::with(['employee', 'lastPayment'])
-            ->where('status', 'active')
-            ->get()
-            ->filter(function ($salary) {
-                $last = $salary->lastPayment ? Carbon::parse($salary->lastPayment->payment_date) : null;
-                return !$last || $last->diffInDays(now()) >= 30;
-            });
+        if ($request->filled('from_date')) {
+            $query->whereDate('payment_date', '>=', $request->from_date);
+        }
 
-        return view('in.salaries.employee_payments.index', compact('salaries', 'search' , 'dueSalaries'));
+        if ($request->filled('to_date')) {
+            $query->whereDate('payment_date', '<=', $request->to_date);
+        }
+
+        $payments = $query->orderBy('payment_date', 'desc')->paginate(15);
+        $employees = Employee::select('id', 'first_name', 'last_name')->get();
+
+        return view('in.salaries.employee_salary_payments.index', compact('payments', 'employees'));
     }
 
     /**
-     * Show the payment form for a specific salary.
+     * Show the form for creating a new resource.
      */
-    public function create($id)
+    public function create()
     {
-        $salary = EmployeeSalary::with(['employee', 'salaryLevel', 'payments'])
-            ->findOrFail($id);
-
-        return view('in.salaries.employee_payments.create', compact('salary'));
+        $salaryRecords = EmployeeSalary::with('employee')->get();
+        return view('in.salaries.employee_salary_payments.create', compact('salaryRecords'));
     }
 
     /**
-     * Store a new payment record.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'employee_salary_id' => 'required|exists:employee_salaries,id',
-            'amount_paid' => 'required|numeric|min:0',
+            'employee_id' => 'nullable|exists:employees,id',
             'payment_date' => 'required|date',
-            'payment_method' => 'nullable|string|max:255',
+            'amount_paid' => 'required|numeric|min:0',
+            'currency' => 'required|string|max:10',
+            'payment_method' => 'nullable|string|max:100',
+            'reference_number' => 'nullable|string|max:100',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'notes' => 'nullable|string',
+            'status' => 'required|in:pending,confirmed,cancelled',
         ]);
 
-        $payment = new EmployeeSalaryPayment();
-        $payment->employee_salary_id = $validated['employee_salary_id'];
-        $payment->amount_paid = $validated['amount_paid'];
-        $payment->payment_date = $validated['payment_date'];
-        $payment->payment_method = $validated['payment_method'] ?? 'Cash';
-        $payment->currency = EmployeeSalary::find($validated['employee_salary_id'])->currency ?? 'TZS';
-        $payment->status = 'paid';
-        $payment->created_by = Auth::id();
-
         if ($request->hasFile('attachment')) {
-            $payment->attachment = $request->file('attachment')->store('salary_payments', 'public');
+            $validated['attachment'] = $request->file('attachment')->store('salary_payments', 'public');
         }
 
-        $payment->save();
-        
+        $validated['created_by'] = Auth::id();
 
-        return redirect()->route('employee_payments.index')
-            ->with('success', 'Salary payment recorded successfully.');
+        EmployeeSalaryPayment::create($validated);
+
+        return redirect()->route('employee_salary_payments.index')->with('success', 'Payment recorded successfully.');
     }
 
     /**
-     * Show all payment records.
+     * Display the specified resource.
      */
-    public function show($id)
+    public function show(EmployeeSalaryPayment $employeeSalaryPayment)
     {
-        $salary = EmployeeSalary::with(['employee', 'salaryLevel', 'payments'])
-            ->findOrFail($id);
-
-        return view('in.salaries.employee_payments.show', compact('salary'));
+        return view('in.salaries.employee_salary_payments.show', compact('employeeSalaryPayment'));
     }
 
     /**
-     * Delete payment record (optional).
+     * Show the form for editing the specified resource.
      */
-    public function destroy($id)
+    public function edit(EmployeeSalaryPayment $employeeSalaryPayment)
     {
-        $payment = EmployeeSalaryPayment::findOrFail($id);
-        $payment->delete();
+        $salaryRecords = EmployeeSalary::with('employee')->get();
+        return view('in.salaries.employee_salary_payments.edit', compact('employeeSalaryPayment', 'salaryRecords'));
+    }
 
-        return back()->with('success', 'Payment deleted successfully.');
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, EmployeeSalaryPayment $employeeSalaryPayment)
+    {
+        $validated = $request->validate([
+            'employee_salary_id' => 'required|exists:employee_salaries,id',
+            'employee_id' => 'nullable|exists:employees,id',
+            'payment_date' => 'required|date',
+            'amount_paid' => 'required|numeric|min:0',
+            'currency' => 'required|string|max:10',
+            'payment_method' => 'nullable|string|max:100',
+            'reference_number' => 'nullable|string|max:100',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'notes' => 'nullable|string',
+            'status' => 'required|in:pending,confirmed,cancelled',
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            if ($employeeSalaryPayment->attachment) {
+                Storage::disk('public')->delete($employeeSalaryPayment->attachment);
+            }
+            $validated['attachment'] = $request->file('attachment')->store('salary_payments', 'public');
+        }
+
+        $validated['updated_by'] = Auth::id();
+
+        $employeeSalaryPayment->update($validated);
+
+        return redirect()->route('employee_salary_payments.index')->with('success', 'Payment updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(EmployeeSalaryPayment $employeeSalaryPayment)
+    {
+        if ($employeeSalaryPayment->attachment) {
+            Storage::disk('public')->delete($employeeSalaryPayment->attachment);
+        }
+        $employeeSalaryPayment->delete();
+
+        return redirect()->route('employee_salary_payments.index')->with('success', 'Payment deleted successfully.');
     }
 }

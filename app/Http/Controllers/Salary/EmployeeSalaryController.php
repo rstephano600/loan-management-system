@@ -4,151 +4,177 @@ namespace App\Http\Controllers\Salary;
 
 use App\Http\Controllers\Controller;
 
+use App\Models\EmployeeSalary;
 use App\Models\Employee;
 use App\Models\SalaryLevel;
-use App\Models\EmployeeSalary;
-use App\Models\EmployeeSalaryPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeSalaryController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
     {
-        $salaries = EmployeeSalary::with(['employee', 'salaryLevel'])
-            ->latest()
-            ->paginate(10);
+        $search = $request->get('search');
 
-        return view('in.salaries.salaries.index', compact('salaries'));
+        $query = EmployeeSalary::with(['employee', 'salaryLevel'])
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('employee', function ($emp) use ($search) {
+                    $emp->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('employee_number', 'like', "%{$search}%");
+                });
+            })
+            ->orderByDesc('created_at');
+
+        $salaries = $query->paginate(10);
+
+        return view('in.salaries.employee_salaries.index', compact('salaries', 'search'));
     }
 
-    public function create()
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request)
     {
-        $employees = Employee::where('is_active', true)->get();
-        $salaryLevels = SalaryLevel::where('status', 'active')->get();
+        $employees = Employee::where('is_active', 1)->orderBy('first_name')->get();
+        $salaryLevels = SalaryLevel::where('status', 'active')->orderBy('name')->get();
 
-        return view('in.salaries.salaries.create', compact('employees', 'salaryLevels'));
+        return view('in.salaries.employee_salaries.create', compact('employees', 'salaryLevels'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'salary_level_id' => 'nullable|exists:salary_levels,id',
+            'basic_amount' => 'required|numeric|min:0',
+            'insurance_amount' => 'nullable|numeric|min:0',
+            'nssf' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
+            'bonus' => 'nullable|numeric|min:0',
+            'effective_from' => 'nullable|date',
+            'effective_to' => 'nullable|date|after_or_equal:effective_from',
+            'status' => 'required|in:active,inactive',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
 
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'employee_id' => 'required|exists:employees,id',
-        'salary_level_id' => 'nullable|exists:salary_levels,id',
-        'bonus' => 'nullable|numeric|min:0',
-        'effective_from' => 'required|date',
-        'effective_to' => 'nullable|date|after_or_equal:effective_from',
-        'payments.*.amount_paid' => 'nullable|numeric|min:0',
-        'payments.*.payment_date' => 'nullable|date',
-        'confirm_multiple' => 'nullable|boolean'
-    ]);
+        // Auto-calculate net amount
+        $validated['net_amount_due'] = ($validated['basic_amount'] ?? 0) 
+                                     + ($validated['bonus'] ?? 0)
+                                     - (($validated['insurance_amount'] ?? 0)
+                                     + ($validated['nssf'] ?? 0)
+                                     + ($validated['tax'] ?? 0));
 
-    // Check if the employee already has one or more active salaries
-    $existingSalaries = EmployeeSalary::where('employee_id', $validated['employee_id'])
-        ->where('status', 'active')
-        ->count();
-
-    if ($existingSalaries > 0 && !$request->boolean('confirm_multiple')) {
-        return back()
-            ->withInput()
-            ->with('warning', 'This employee already has an active salary. Please confirm to continue.');
-    }
-
-    $salaryLevel = SalaryLevel::findOrFail($validated['salary_level_id']);
-    $baseSalary = $salaryLevel->default_salary;
-
-    $salary = EmployeeSalary::create([
-        'employee_id' => $validated['employee_id'],
-        'salary_level_id' => $validated['salary_level_id'],
-        'base_salary' => $baseSalary,
-        'bonus' => $validated['bonus'] ?? 0,
-        'currency' => $salaryLevel->currency,
-        'effective_from' => $validated['effective_from'],
-        'effective_to' => $validated['effective_to'] ?? null,
-        'created_by' => Auth::id(),
-        'status' => 'active',
-    ]);
-
-    // Save inline payments if any
-    if ($request->has('payments')) {
-        foreach ($request->payments as $payment) {
-            if (!empty($payment['amount_paid']) && !empty($payment['payment_date'])) {
-                $salary->payments()->create([
-                    'amount_paid' => $payment['amount_paid'],
-                    'payment_date' => $payment['payment_date'],
-                    'payment_method' => $payment['payment_method'] ?? null,
-                    'currency' => $salary->currency,
-                    'status' => 'paid',
-                    'created_by' => Auth::id(),
-                ]);
-            }
+        // Handle file upload
+        if ($request->hasFile('attachment')) {
+            $validated['attachment'] = $request->file('attachment')->store('salary_attachments', 'public');
         }
+
+        $validated['created_by'] = Auth::id();
+
+        EmployeeSalary::create($validated);
+
+        return redirect()->route('employee_salaries.index')->with('success', 'Employee salary record created successfully.');
     }
 
-    return redirect()->route('employee_salaries.index')
-        ->with('success', 'Employee salary created successfully!');
-}
-
-
-
-
+    /**
+     * Display the specified resource.
+     */
     public function show(EmployeeSalary $employeeSalary)
     {
-        $employeeSalary->load(['employee', 'salaryLevel', 'payments']);
-        return view('in.salaries.salaries.show', compact('employeeSalary'));
+        $employeeSalary->load(['employee', 'salaryLevel']);
+        return view('in.salaries.employee_salaries.show', compact('employeeSalary'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(EmployeeSalary $employeeSalary)
     {
-        $employees = Employee::where('is_active', true)->get();
-        $salaryLevels = SalaryLevel::where('status', 'active')->get();
-        $employeeSalary->load('payments');
+        $employees = Employee::orderBy('first_name')->get();
+        $salaryLevels = SalaryLevel::where('status', 'active')->orderBy('name')->get();
 
-        return view('in.salaries.salaries.edit', compact('employeeSalary', 'employees', 'salaryLevels'));
+        return view('in.salaries.employee_salaries.edit', compact('employeeSalary', 'employees', 'salaryLevels'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, EmployeeSalary $employeeSalary)
     {
         $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
             'salary_level_id' => 'nullable|exists:salary_levels,id',
+            'basic_amount' => 'required|numeric|min:0',
+            'insurance_amount' => 'nullable|numeric|min:0',
+            'nssf' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
             'bonus' => 'nullable|numeric|min:0',
-            'effective_from' => 'required|date',
+            'effective_from' => 'nullable|date',
             'effective_to' => 'nullable|date|after_or_equal:effective_from',
+            'status' => 'required|in:active,inactive',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-    $salaryLevel = SalaryLevel::findOrFail($validated['salary_level_id']);
-    $baseSalary = $salaryLevel->default_salary;
+        $validated['net_amount_due'] = ($validated['basic_amount'] ?? 0) 
+                                     + ($validated['bonus'] ?? 0)
+                                     - (($validated['insurance_amount'] ?? 0)
+                                     + ($validated['nssf'] ?? 0)
+                                     + ($validated['tax'] ?? 0));
 
-        $employeeSalary->update([
-            ...$validated,
-        'base_salary' => $baseSalary,
-            'updated_by' => Auth::id(),
-        ]);
-
-        // Handle Payments Update
-        EmployeeSalaryPayment::where('employee_salary_id', $employeeSalary->id)->delete();
-
-        if ($request->has('payments')) {
-            foreach ($request->payments as $payment) {
-                EmployeeSalaryPayment::create([
-                    'employee_salary_id' => $employeeSalary->id,
-                    'amount_paid' => $payment['amount_paid'],
-                    'payment_date' => $payment['payment_date'],
-                    'payment_method' => $payment['payment_method'] ?? 'cash',
-                    'currency' => $employeeSalary->currency,
-                    'created_by' => Auth::id(),
-                ]);
+        if ($request->hasFile('attachment')) {
+            if ($employeeSalary->attachment) {
+                Storage::disk('public')->delete($employeeSalary->attachment);
             }
+            $validated['attachment'] = $request->file('attachment')->store('salary_attachments', 'public');
         }
 
-        return redirect()->route('employee_salaries.index')
-            ->with('success', 'Employee salary updated successfully.');
+        $validated['updated_by'] = Auth::id();
+
+        $employeeSalary->update($validated);
+
+        return redirect()->route('employee_salaries.index')->with('success', 'Employee salary updated successfully.');
     }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+
+    public function searchEmployees(Request $request)
+{
+    $term = $request->get('term', '');
+
+    $employees = \App\Models\Employee::query()
+        ->where('first_name', 'like', "%{$term}%")
+        ->orWhere('last_name', 'like', "%{$term}%")
+        ->orWhere('employee_number', 'like', "%{$term}%")
+        ->limit(10)
+        ->get(['id', 'first_name', 'last_name', 'employee_number']);
+
+    $results = $employees->map(function ($e) {
+        return [
+            'id' => $e->id,
+            'text' => "{$e->first_name} {$e->last_name} ({$e->employee_number})",
+        ];
+    });
+
+    return response()->json(['results' => $results]);
+}
 
     public function destroy(EmployeeSalary $employeeSalary)
     {
+        if ($employeeSalary->attachment) {
+            Storage::disk('public')->delete($employeeSalary->attachment);
+        }
         $employeeSalary->delete();
+
         return redirect()->route('employee_salaries.index')->with('success', 'Employee salary deleted successfully.');
     }
 }

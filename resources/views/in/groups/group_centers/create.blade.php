@@ -30,20 +30,20 @@
                                value="{{ old('location') }}" placeholder="e.g., Street A, Building B">
                         @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    
-                    <!-- {{-- Collection Officer --}}
-                    <div class="col-md-6">
-                        <label for="collection_officer_id" class="form-label fw-bold">Collection Officer</label>
-                        <select name="collection_officer_id" id="collection_officer_id" class="form-select @error('collection_officer_id') is-invalid @enderror">
-                            <option value="">-- Select Officer --</option>
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}" {{ old('collection_officer_id') == $emp->id ? 'selected' : '' }}>
-                                    {{ $emp->first_name }} {{ $emp->last_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('collection_officer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div> -->
+
+                    {{-- Collection Officer (Dynamic Search) --}}
+                    <div class="col-md-6 position-relative">
+                        <label for="collection_officer_search" class="form-label fw-bold">Collection Officer</label>
+                        <input type="text" id="collection_officer_search" class="form-control" placeholder="Search officer by name, email, or phone..." autocomplete="off">
+
+                        {{-- Hidden input to store selected officer --}}
+                        <input type="hidden" name="collection_officer_id" id="collection_officer_id" value="{{ old('collection_officer_id') }}">
+
+                        {{-- Results dropdown --}}
+                        <ul id="officer-results" class="list-group position-absolute w-100 shadow-sm mt-1" style="z-index: 1000; display: none;"></ul>
+
+                        @error('collection_officer_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
                     
                     {{-- Status --}}
                     <div class="col-md-6">
@@ -62,7 +62,6 @@
                                   rows="3" placeholder="Details about meeting schedules or center operations.">{{ old('description') }}</textarea>
                         @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-
                 </div>
 
                 {{-- Form Actions --}}
@@ -78,4 +77,50 @@
         </div>
     </div>
 </div>
+
+{{-- JavaScript for AJAX Search --}}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById('collection_officer_search');
+    const resultsBox = document.getElementById('officer-results');
+    const hiddenInput = document.getElementById('collection_officer_id');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length < 2) {
+            resultsBox.style.display = 'none';
+            return;
+        }
+
+        fetch(`/search-officers?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                resultsBox.innerHTML = '';
+                if (data.length === 0) {
+                    resultsBox.innerHTML = '<li class="list-group-item text-muted">No matches found</li>';
+                } else {
+                    data.forEach(officer => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action';
+                        li.textContent = `${officer.first_name} ${officer.last_name} (${officer.email})`;
+                        li.style.cursor = 'pointer';
+                        li.addEventListener('click', function() {
+                            searchInput.value = `${officer.first_name} ${officer.last_name}`;
+                            hiddenInput.value = officer.id;
+                            resultsBox.style.display = 'none';
+                        });
+                        resultsBox.appendChild(li);
+                    });
+                }
+                resultsBox.style.display = 'block';
+            });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!resultsBox.contains(e.target) && e.target !== searchInput) {
+            resultsBox.style.display = 'none';
+        }
+    });
+});
+</script>
 @endsection

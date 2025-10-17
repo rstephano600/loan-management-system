@@ -11,32 +11,89 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\GroupCenter;
 use App\Models\Group;
+use App\Models\User;
 use App\Models\RepaymentSchedule;
+use App\Models\Employee;
+use Illuminate\Support\Facades\DB;
 
 
 class LoanRequestContinuengClientController extends Controller
 {
-/**
-     * Display a listing of client loan requests (pending or active).
-     */
-    public function index(Request $request)
-    {
-        $query = Loan::with(['client', 'loanCategory'])
-            ->whereIn('status', ['pending', 'approved', 'active'])
-            ->whereIn('is_new_client',[false]);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
+public function index(Request $request)
+{
+    $user = auth()->user();
+    $search = $request->input('search');
+    
+    // Get users and clients for dropdowns
+    $users = User::where('status', 'active')->orWhere('status', 'inactive')->get();
+    $clients = Client::where('status', 'active')->orWhere('status', 'inactive')->get();
 
-        if ($request->filled('client_id')) {
-            $query->where('client_id', $request->input('client_id'));
-        }
+    $query = Loan::with(['client', 'loanCategory', 'createdBy', 'approvedBy', 'updatedBy'])
+        ->whereIn('status', ['pending', 'approved', 'active'])
+        ->where('is_new_client', 0)
+        ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+            $employee = Employee::where('user_id', $user->id)->first();
+            if ($employee) {
+                $query->where('collection_officer_id', $employee->id);
+            }
+        });
 
-        $loans = $query->latest()->paginate(10);
+    // Search functionality
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('loan_number', 'like', "%{$search}%")
+              ->orWhereHas('client', function ($q) use ($search) {
+                  $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+              })
+              ->orWhereHas('loanCategory', function ($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              })
+              ->orWhereHas('createdBy', function ($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
 
-        return view('in.loans.requests.continuing_clients.index', compact('loans'));
+              });
+        });
     }
+
+    // Individual filters
+    if ($request->filled('status')) {
+        $query->where('status', $request->input('status'));
+    }
+
+    if ($request->filled('client_id')) {
+        $query->where('client_id', $request->input('client_id'));
+    }
+
+    if ($request->filled('created_by')) {
+        $query->where('created_by', $request->input('created_by'));
+    }
+
+    if ($request->filled('approved_by')) {
+        $query->where('approved_by', $request->input('approved_by'));
+    }
+
+    if ($request->filled('updated_by')) {
+        $query->where('updated_by', $request->input('updated_by'));
+    }
+
+    if ($request->filled('disbursed_date')) {
+        $query->whereDate('disbursement_date', $request->input('disbursed_date'));
+    }
+
+    if ($request->filled('disbursed_date_from')) {
+        $query->whereDate('disbursement_date', '>=', $request->input('disbursed_date_from'));
+    }
+
+    if ($request->filled('disbursed_date_to')) {
+        $query->whereDate('disbursement_date', '<=', $request->input('disbursed_date_to'));
+    }
+
+    $loans = $query->latest()->paginate(30);
+
+    return view('in.loans.requests.continuing_clients.index', compact('loans', 'search', 'users', 'clients'));
+}
 
     /**
      * Show form for creating a new loan request.
@@ -44,14 +101,22 @@ class LoanRequestContinuengClientController extends Controller
 
      public function create()
      {
+            $user = auth()->user();
     // Active loan categories
          $categories = LoanCategory::where('is_active', true)->get();
 
     // Active clients
-$clients = Client::where('status', 'active')
-    ->whereHas('loans') // ✅ correct method name
-    ->with(['group', 'groupCenter']) // eager-load relationships
-    ->get();
+
+        $clients = Client::where('status', 'active')
+        ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+                // Assuming `Employee` is linked to `User` via user_id
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $query->where('credit_officer_id', $employee->id);
+                }
+            })
+        ->with(['group', 'groupCenter'])
+        ->get();
 
 
     // Group centers and groups for dropdowns (optional)
@@ -80,7 +145,7 @@ $clients = Client::where('status', 'active')
         'group_id' => $client->group_id,
         'group_center_id' => $client->group_center_id,
         'client_id' => $validated['client_id'],
-        'collection_officer_id' => $client->assigned_loan_officer_id,
+        'collection_officer_id' => $client->credit_officer_id,
         'loan_category_id' => $loanCategory->id,
         'loan_number' => $loanNumber,
 
@@ -125,23 +190,45 @@ $clients = Client::where('status', 'active')
     /**
      * Display details of a specific loan request.
      */
-    public function show(Loan $loan)
-    {
-        $loan->load(['client', 'loanCategory']);
-        return view('in.loans.requests.continuing_clients.show', compact('loan'));
-    }
+
+public function show(Loan $loan) 
+{
+    $loan->load(['client', 'group', 'groupCenter', 'loanCategory']);
+
+    $schedules = RepaymentSchedule::where('loan_id', $loan->id)
+    ->where('is_paid', false)
+    ->orderBy('due_day_number', 'asc')
+    ->get();
+
+$schedulesPaids = RepaymentSchedule::where('loan_id', $loan->id)
+    ->where('is_paid', true)
+    ->orderBy('due_day_number', 'asc')
+    ->get();
+    return view('in.loans.requests.continuing_clients.show',  compact('loan', 'schedules', 'schedulesPaids'));
+}
 
     /**
      * Edit loan request (optional before approval).
      */
     public function edit(Loan $loan)
     {
+        $user = auth()->user();
+
         if ($loan->status !== 'approved') {
             return redirect()->back()->with('error', 'Only pending loan requests can be edited.');
         }
 
         $loanCategories = LoanCategory::where('is_active', true)->get();
-        $clients = Client::where('status', 'active')->get();
+        $clients = Client::where('status', 'active')
+                ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+                // Assuming `Employee` is linked to `User` via user_id
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $query->where('credit_officer_id', $employee->id);
+                }
+            })
+        ->with(['group', 'groupCenter'])
+        ->get();
 
         return view('in.loans.requests.continuing_clients.edit', compact('loan', 'loanCategories', 'clients'));
     }
@@ -199,7 +286,7 @@ public function destroy(Loan $loan)
 if (strtolower(trim($loan->status)) === 'pending') {
     return redirect()->back()->with('error', 'Only pending loans can be deleted.');
 }
-    $loan->delete();
+    // $loan->delete();
 
     return redirect()
         ->route('loan_request_continueng_client.index')

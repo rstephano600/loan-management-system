@@ -22,9 +22,28 @@ public function index(Request $request)
     $status = $request->input('status');
     $groupId = $request->input('group_id');
 
-    // Query builder
-    $query = GroupCenter::with(['group', 'collection_officer']);
+    $user = auth()->user(); // Logged-in user
 
+    // ✅ Base query
+    $query = GroupCenter::with(['groups', 'collectionOfficer']);
+
+    /**
+     * ✅ Restrict by role
+     * - If the logged-in user is a loan officer,
+     *   show only centers where their employee record matches collection_officer_id
+     */
+    if ($user->role === 'loanofficer') {
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if ($employee) {
+            $query->where('collection_officer_id', $employee->id);
+        } else {
+            // If not linked to an employee, show nothing
+            $query->whereRaw('1 = 0');
+        }
+    }
+
+    // ✅ Search by center name, code, or location
     if ($search) {
         $query->where(function ($q) use ($search) {
             $q->where('center_name', 'like', "%{$search}%")
@@ -33,22 +52,26 @@ public function index(Request $request)
         });
     }
 
-    if ($status) {
+    // ✅ Filter by active/inactive status
+    if ($status !== null && $status !== '') {
         $query->where('is_active', $status);
     }
 
+    // ✅ Filter by specific group ID (if selected)
     if ($groupId) {
-        $query->where('created_at', $groupId);
+        $query->whereHas('groups', function ($q) use ($groupId) {
+            $q->where('id', $groupId);
+        });
     }
 
+    // ✅ Fetch centers and groups
     $centers = $query->orderBy('id', 'desc')->paginate(10);
-
-    // 👇 Add this line to fix the error
     $groups = Group::select('id', 'group_name')->orderBy('group_name')->get();
 
-    // Pass both $centers and $groups to the view
-    return view('in.groups.group_centers.index', compact('centers', 'groups'));
+    return view('in.groups.group_centers.index', compact('centers', 'groups', 'search', 'status', 'groupId'));
 }
+
+
 
 
     /**
@@ -97,8 +120,11 @@ public function show(GroupCenter $groupCenter)
         'groups.loanOfficer',
     ]);
 
-    return view('in.groups.group_centers.show', compact('groupCenter'));
+    $creditOfficers = \App\Models\Employee::where('position', 'Loan Officer')->get();
+
+    return view('in.groups.group_centers.show', compact('groupCenter','creditOfficers'));
 }
+
 
 
     /**

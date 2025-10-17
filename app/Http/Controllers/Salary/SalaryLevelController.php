@@ -10,36 +10,37 @@ use Illuminate\Support\Facades\Auth;
 
 class SalaryLevelController extends Controller
 {
-    // Display list with search & pagination
-    public function index(Request $request)
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        $query = SalaryLevel::query();
-
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-        }
-
-        $salaryLevels = $query->orderBy('id', 'desc')->paginate(10);
-
+        $salaryLevels = SalaryLevel::orderBy('name')->paginate(10);
         return view('in.salaries.salary_levels.index', compact('salaryLevels'));
     }
 
-    // Show create form
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return view('in.salaries.salary_levels.create');
     }
 
-    // Store new Salary Level
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:salary_levels,name',
-            'description' => 'nullable|string',
-            'default_salary' => 'nullable|numeric|min:0',
+            'name' => 'required|string|unique:salary_levels,name',
+            'basic_amount' => 'required|numeric|min:0',
+            'insurance_amount' => 'nullable|numeric|min:0',
+            'nssf' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
+            'net_amount_due' => 'nullable|numeric|min:0',
             'currency' => 'required|string|max:10',
+            'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -47,29 +48,39 @@ class SalaryLevelController extends Controller
 
         SalaryLevel::create($validated);
 
-        return redirect()->route('salary_levels.index')->with('success', 'Salary Level created successfully.');
+        return redirect()->route('salary_levels.index')->with('success', 'Salary level created successfully.');
     }
 
-    // Show single Salary Level
+    /**
+     * Display the specified resource.
+     */
     public function show(SalaryLevel $salaryLevel)
     {
         return view('in.salaries.salary_levels.show', compact('salaryLevel'));
     }
 
-    // Show edit form
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(SalaryLevel $salaryLevel)
     {
         return view('in.salaries.salary_levels.edit', compact('salaryLevel'));
     }
 
-    // Update Salary Level
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, SalaryLevel $salaryLevel)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:salary_levels,name,'.$salaryLevel->id,
-            'description' => 'nullable|string',
-            'default_salary' => 'nullable|numeric|min:0',
+            'name' => 'required|string|unique:salary_levels,name,' . $salaryLevel->id,
+            'basic_amount' => 'required|numeric|min:0',
+            'insurance_amount' => 'nullable|numeric|min:0',
+            'nssf' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
+            'net_amount_due' => 'nullable|numeric|min:0',
             'currency' => 'required|string|max:10',
+            'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -77,13 +88,15 @@ class SalaryLevelController extends Controller
 
         $salaryLevel->update($validated);
 
-        return redirect()->route('salary_levels.index')->with('success', 'Salary Level updated successfully.');
+        return redirect()->route('salary_levels.index')->with('success', 'Salary level updated successfully.');
     }
 
-    // Delete Salary Level
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(SalaryLevel $salaryLevel)
     {
         $salaryLevel->delete();
-        return redirect()->route('salary_levels.index')->with('success', 'Salary Level deleted successfully.');
+        return redirect()->route('salary_levels.index')->with('success', 'Salary level deleted successfully.');
     }
 }

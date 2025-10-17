@@ -58,17 +58,17 @@
                         <tr>
                             <th class="text-center" style="width: 5%;">#</th>
                             <th style="width: 10%;">Type</th>
-                            <th style="width: 30%;">Full Name / Business</th>
+                            <th style="width: 25%;">Full Name / Business</th>
                             <th style="width: 20%;">Contact Info</th>
+                            <th class="text-center" style="width: 15%;">Loan Officer</th>
                             <th class="text-center" style="width: 10%;">Status</th>
-                            <th class="text-center" style="width: 10%;">Credit</th>
                             <th class="text-center" style="width: 15%;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($clients as $client)
                             <tr>
-                                <td class="text-center text-muted">{{ $client->id }}</td>
+                                <td class="text-center text-muted">{{ $loop->iteration }}</td>
                                 <td>
                                     <span class="badge bg-secondary-subtle text-secondary fw-normal">
                                         {{ ucfirst($client->client_type) }}
@@ -87,6 +87,10 @@
                                     </div>
                                 </td>
                                 <td class="text-center">
+                                    <span class="fw-semibold">{{ $client->assignedLoanOfficer->first_name ?? 'N/A' }} {{ $client->assignedLoanOfficer->last_name ?? ' ' }}</span>
+                                    
+                                </td>
+                                <td class="text-center">
                                     {{-- Dynamic Status Badge with better colors --}}
                                     @php
                                         $statusClass = [
@@ -100,9 +104,7 @@
                                         {{ ucfirst($client->status) }}
                                     </span>
                                 </td>
-                                <td class="text-center">
-                                    <span class="fw-semibold">{{ $client->credit_rating ?? '-' }}</span>
-                                </td>
+
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('clients.show', $client->id) }}" class="btn btn-sm btn-outline-info" title="View Details">

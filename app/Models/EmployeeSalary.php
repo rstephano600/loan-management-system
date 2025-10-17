@@ -12,35 +12,34 @@ class EmployeeSalary extends Model
     protected $fillable = [
         'employee_id',
         'salary_level_id',
-        'base_salary',
+        'basic_amount',
+        'insurance_amount',
+        'nssf',
+        'tax',
+        'net_amount_due',
         'bonus',
-        'currency',
         'effective_from',
         'effective_to',
-        'status',
+        'attachment',
         'created_by',
         'updated_by',
+        'status',
     ];
 
-    // Relations
+    /**
+     * =============================
+     * Relationships
+     * =============================
+     */
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class, );
+        return $this->belongsTo(Employee::class);
     }
 
-    public function level()
+    public function salaryLevel()
     {
-        return $this->belongsTo(SalaryLevel::class, 'salary_level_id');
-    }
-    public function salarylevel()
-    {
-        return $this->belongsTo(SalaryLevel::class, 'salary_level_id');
-    }
-
-    public function payments()
-    {
-        return $this->hasMany(EmployeeSalaryPayment::class);
+        return $this->belongsTo(SalaryLevel::class);
     }
 
     public function creator()
@@ -53,29 +52,27 @@ class EmployeeSalary extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    // Helper Methods
+    /**
+     * =============================
+     * Accessors / Helpers
+     * =============================
+     */
 
-    public function totalPaid()
+    // Auto-calculate total deductions
+    public function getTotalDeductionsAttribute()
     {
-        return $this->payments()->sum('amount_paid');
+        return $this->insurance_amount + $this->nssf + $this->tax;
     }
 
-    public function outstanding()
+    // Auto-calculate gross (basic + bonus)
+    public function getGrossAmountAttribute()
     {
-        return ($this->base_salary + $this->bonus) - $this->totalPaid();
+        return $this->basic_amount + $this->bonus;
     }
 
-    // Scopes
-
-    public function scopeActive($query)
+    // Optionally compute the net amount if not directly stored
+    public function getComputedNetAmountAttribute()
     {
-        return $query->where('status', 'active');
+        return $this->gross_amount - $this->total_deductions;
     }
-
-    public function lastPayment()
-{
-    return $this->hasOne(EmployeeSalaryPayment::class)
-        ->latest('payment_date');
-}
-
 }

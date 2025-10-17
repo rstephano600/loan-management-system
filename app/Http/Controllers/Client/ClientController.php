@@ -4,6 +4,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Client;
 use App\Models\User;
+use App\Models\Employee;
 use App\Models\GroupCenter;
 use App\Models\Group;
 use App\Helpers\LogActivity;
@@ -17,8 +18,17 @@ class ClientController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Client::query();
-
+            $user = auth()->user();
+        // $query = Client::query();
+        $query = Client::where('status', 'active')
+        ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+                // Assuming `Employee` is linked to `User` via user_id
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $query->where('credit_officer_id', $employee->id);
+                }
+            })
+        ->with(['group', 'groupCenter']);
         // 🔍 Search by name, email, phone, or business name
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -37,7 +47,7 @@ class ClientController extends Controller
 
         // 🏦 Filter by assigned loan officer
         if ($officer = $request->input('loan_officer')) {
-            $query->where('assigned_loan_officer_id', $officer);
+            $query->where('credit_officer_id', $officer);
         }
 
         // ✅ Filter by KYC completion
@@ -46,7 +56,7 @@ class ClientController extends Controller
         }
 
         // Pagination
-        $clients = $query->orderBy('created_at', 'desc')->paginate(10)->appends($request->query());
+        $clients = $query->orderBy('created_at', 'desc')->paginate(30)->appends($request->query());
 
         $loanOfficers = User::where('role', 'loanofficer')->get();
 
@@ -56,12 +66,28 @@ class ClientController extends Controller
     /**
      * Show the form for creating a new client.
      */
-    public function create()
-    {
-        $loanOfficers = User::where('role', 'loanofficer')->get();
-        $centres = Group::where('is_active', true)->get();
-        return view('in.clients.create', compact('loanOfficers', 'centres'));
-    }
+
+public function create(Request $request)
+{
+    // Fetch lists
+    $loanOfficers = User::where('role', 'loanOfficer')->get();
+    $centres = Group::where('is_active', true)->get();
+    $creditOfficers = Employee::where('is_active', true)->get();
+
+    // Capture from query params (like ?group_id=3)
+    $selectedGroupId = $request->get('group_id');
+    $selectedLoanOfficerId = $request->get('loan_officer_id');
+    $selectedCreditOfficerId = $request->get('credit_officer_id');
+
+    return view('in.clients.create', compact(
+        'loanOfficers',
+        'centres',
+        'creditOfficers',
+        'selectedGroupId',
+        'selectedLoanOfficerId',
+        'selectedCreditOfficerId'
+    ));
+}
 
     /**
      * Store a newly created client in storage.
@@ -69,6 +95,7 @@ class ClientController extends Controller
  public function store(Request $request)
 {
     $validated = $request->validate([
+        'group_center_id' =>'nullable|exists:group_centers,id',
         'group_id' => 'nullable|exists:groups,id',
         'client_type' => 'required|string|max:255',
         'business_name' => 'nullable|string|max:255',
@@ -108,15 +135,20 @@ class ClientController extends Controller
         'risk_category' => 'nullable|string|max:50',
         'status' => 'required|string|max:50',
         'blacklist_reason' => 'nullable|string|max:255',
-        'assigned_loan_officer_id' => 'nullable|exists:users,id',
+        'credit_officer_id' => 'nullable|exists:users,id',
         'kyc_completed' => 'boolean',
     ]);
 
     $validated['kyc_completed_at'] = $request->kyc_completed ? now() : null;
 
+    $creditOfficerId = Group::findOrFail($validated['group_id']);
+
+    $validated['credit_officer_id'] = $creditOfficerId->credit_officer_id;
+    $validated['group_center_id'] = $creditOfficerId->group_center_id;
+
     Client::create($validated);
 
-    return redirect()->route('clients.index')->with('success', 'Client created successfully.');
+    return back()->with('success', 'User' . $validated['first_name'] . ' ' . $validated['last_name'] . ' created successfully!');
     }
 
 
@@ -147,6 +179,7 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $validated = $request->validate([
+            'group_center_id' =>'nullable|exists:group_centers,id',
             'group_id' => 'nullable|exists:groups,id',
             'client_type' => 'required|string|max:255',
             'business_name' => 'nullable|string|max:255',
@@ -187,15 +220,20 @@ class ClientController extends Controller
             'risk_category' => 'nullable|string|max:50',
             'status' => 'required|string|max:50',
             'blacklist_reason' => 'nullable|string|max:255',
-            'assigned_loan_officer_id' => 'nullable|exists:users,id',
+            'credit_officer_id' => 'nullable|exists:users,id',
             'kyc_completed' => 'boolean',
         ]);
 
         $validated['kyc_completed_at'] = $request->kyc_completed ? now() : null;
 
+        $creditOfficerId = Group::findOrFail($validated['group_id']);
+        $validated['credit_officer_id'] = $creditOfficerId->credit_officer_id;
+        $validated['group_center_id'] = $creditOfficerId->group_center_id;
+
         $client->update($validated);
 
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
+        
     }
 
 

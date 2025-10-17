@@ -43,7 +43,7 @@
 </div>
 
 <div class="col-md-6">
-    <label for="credit_officer_id" class="form-label">Select Credit Officer</label>
+    <label for="credit_officer_id" class="form-label">Select Group Officer</label>
     <select class="form-select" name="credit_officer_id" id="credit_officer_id" required>
         <option value="">Select Credit Officer</option>
         @foreach($creditOfficers as $creditOfficer)
@@ -79,20 +79,6 @@
                         @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     
-                    {{-- Credit Officer (Select) --}}
-                    <div class="col-md-6">
-                        <label for="credit_officer_id" class="form-label fw-bold">Credit Officer</label>
-                        <select name="credit_officer_id" id="credit_officer_id" class="form-select @error('credit_officer_id') is-invalid @enderror">
-                            <option value="">-- Select Officer --</option>
-                            @foreach($creditOfficers as $officer)
-                                <option value="{{ $officer->id }}" 
-                                    {{ old('credit_officer_id', $group->credit_officer_id) == $officer->id ? 'selected' : '' }}>
-                                    {{ $officer->first_name }} {{ $officer->last_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('credit_officer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
 
                     {{-- Registration Date --}}
                     <div class="col-md-6">

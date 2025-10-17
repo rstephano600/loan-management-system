@@ -76,7 +76,6 @@ class EmployeeManagementController extends Controller
     {
         $validated = $request->validate([
             // User Information
-            'username' => 'required|string|unique:users,username|max:255',
             'email' => 'required|email|unique:users,email|max:255',
             'phone' => 'nullable|string|unique:users,phone|max:20',
             'password' => 'required|string|min:8|confirmed',
@@ -131,10 +130,12 @@ class EmployeeManagementController extends Controller
 
         DB::beginTransaction();
 
+        $username = 'AB' . '-' .$validated['last_name']. '-' . str_pad(Employee::count() + 1, 6, '0', STR_PAD_LEFT);
+
         try {
             // Create User
             $user = User::create([
-                'username' => $validated['username'],
+                'username' => $username,
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'password' => Hash::make($validated['password']),
@@ -229,7 +230,7 @@ class EmployeeManagementController extends Controller
             DB::commit();
 
             return redirect()->route('employees.index')
-                ->with('success', 'Mfanyakazi ameongezwa kikamilifu!');
+                ->with('success', 'An employee have been added succesfully with the username' . $username );
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -243,7 +244,7 @@ class EmployeeManagementController extends Controller
             }
 
             return back()->withInput()
-                ->with('error', 'Kuna tatizo limetokea: ' . $e->getMessage());
+                ->with('error', 'There is a problem happened please try again or contact administrator: ' . $e->getMessage());
         }
     }
 
@@ -387,13 +388,13 @@ class EmployeeManagementController extends Controller
             DB::commit();
 
             return redirect()->route('employees.show', $employee)
-                ->with('success', 'Taarifa za mfanyakazi zimesasishwa kikamilifu!');
+                ->with('success', 'An employee have been Updated succesfully');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             return back()->withInput()
-                ->with('error', 'Kuna tatizo limetokea: ' . $e->getMessage());
+                ->with('error', 'There is a problem: ' . $e->getMessage());
         }
     }
 
@@ -419,12 +420,12 @@ class EmployeeManagementController extends Controller
             DB::commit();
 
             return redirect()->route('employees.index')
-                ->with('success', 'Mfanyakazi amefutwa kikamilifu!');
+                ->with('success', 'An employee have been deleted succesfully!');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Kuna tatizo limetokea: ' . $e->getMessage());
+            return back()->with('error', 'sorry their is a problem in deleting: ' . $e->getMessage());
         }
     }
 
@@ -444,12 +445,12 @@ class EmployeeManagementController extends Controller
                 'status' => $employee->is_active ? 'active' : 'inactive',
             ]);
 
-            $status = $employee->is_active ? 'ameanzishwa' : 'amesimamishwa';
+            $status = $employee->is_active ? 'active' : 'inactive';
 
-            return back()->with('success', "Mfanyakazi {$status} kikamilifu!");
+            return back()->with('success', "Employee {$status} successfully!");
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Kuna tatizo limetokea: ' . $e->getMessage());
+            return back()->with('error', 'Sorry an error happened: ' . $e->getMessage());
         }
     }
 
@@ -480,10 +481,10 @@ class EmployeeManagementController extends Controller
                 'other_informations' => $validated['other_informations'],
             ]);
 
-            return back()->with('success', 'Referee ameongezwa kikamilifu!');
+            return back()->with('success', 'Referee have been added successfully!');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Kuna tatizo limetokea: ' . $e->getMessage());
+            return back()->with('error', 'Sorry their is an error: ' . $e->getMessage());
         }
     }
 
@@ -494,9 +495,27 @@ class EmployeeManagementController extends Controller
     {
         try {
             $referee->delete();
-            return back()->with('success', 'Referee amefutwa kikamilifu!');
+            return back()->with('success', 'Referee have deleted successfuly!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Kuna tatizo limetokea: ' . $e->getMessage());
+            return back()->with('error', 'Sorry a problem happened: ' . $e->getMessage());
         }
     }
+
+    public function searchOfficers(Request $request)
+{
+    $query = $request->get('q', '');
+    $officers = \App\Models\Employee::query()
+        ->where(function($q) use ($query) {
+            $q->where('first_name', 'like', "%{$query}%")
+              ->orWhere('last_name', 'like', "%{$query}%")
+              ->orWhere('email', 'like', "%{$query}%")
+              ->orWhere('phone', 'like', "%{$query}%");
+        })
+        ->where('status', 'active')
+        ->limit(10)
+        ->get(['id', 'first_name', 'last_name', 'email']);
+    
+    return response()->json($officers);
+}
+
 }

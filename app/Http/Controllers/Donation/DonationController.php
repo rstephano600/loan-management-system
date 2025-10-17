@@ -15,23 +15,64 @@ class DonationController extends Controller
     /**
      * Display a listing of the donations (with search & pagination)
      */
-    public function index(Request $request)
-    {
-        $query = Donation::with('createdBy');
+public function index(Request $request)
+{
+    $query = Donation::with('createdBy');
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('donation_title', 'like', "%{$search}%")
-                  ->orWhere('recipient_name', 'like', "%{$search}%")
-                  ->orWhere('support_type', 'like', "%{$search}%");
-            });
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('donation_title', 'like', "%{$search}%")
+              ->orWhere('recipient_name', 'like', "%{$search}%")
+              ->orWhere('support_type', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereBetween('donation_date', [$request->start_date, $request->end_date]);
+    } elseif ($request->filled('donation_date')) {
+        $query->whereDate('donation_date', $request->donation_date);
+    }
+
+    if ($request->filled('created_by')) {
+        $query->where('created_by', $request->created_by);
+    }
+
+    if ($request->filled('recipient_name')) {
+        $query->where('recipient_name', 'like', "%{$request->recipient_name}%");
+    }
+
+    $totalAmount = $query->sum('amount');
+
+    if ($request->filled('export') && $request->export === 'csv') {
+        $donations = $query->get();
+
+        $filename = 'donations_' . now()->format('Y_m_d_H_i_s') . '.csv';
+        $handle = fopen($filename, 'w+');
+        fputcsv($handle, ['Title', 'Recipient', 'Support Type', 'Amount', 'Date', 'Created By']);
+
+        foreach ($donations as $donation) {
+            fputcsv($handle, [
+                $donation->donation_title,
+                $donation->recipient_name,
+                $donation->support_type,
+                $donation->amount,
+                $donation->donation_date,
+                optional($donation->createdBy)->name,
+            ]);
         }
 
-        $donations = $query->latest()->paginate(10);
-
-        return view('in.donations.index', compact('donations'));
+        fclose($handle);
+        return response()->download($filename)->deleteFileAfterSend(true);
     }
+
+    $donations = $query->latest()->paginate(10);
+    $users = \App\Models\User::select('id', 'name')->get();
+
+    return view('in.donations.index', compact('donations', 'users', 'totalAmount'));
+}
+
+
 
     /**
      * Show the form for creating a new donation

@@ -23,15 +23,15 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <!-- <div class="col-md-4">
                         <label class="form-label">Username <span class="text-danger">*</span></label>
                         <input type="text" name="username" class="form-control @error('username') is-invalid @enderror" 
                                value="{{ old('username', $employee->user->username) }}" required>
                         @error('username')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                    </div>
-                    <div class="col-md-4">
+                    </div> -->
+                    <div class="col-md-6">
                         <label class="form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
                                value="{{ old('email', $employee->user->email) }}" required>
@@ -39,7 +39,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label">Phone Number</label>
                         <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" 
                                value="{{ old('phone', $employee->user->phone) }}">
@@ -71,7 +71,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-md-6">
+                    <!-- <div class="col-md-6">
                         <label class="form-label">New Password (Leave blank if not changing)</label>
                         <input type="password" name="password" class="form-control @error('password') is-invalid @enderror">
                         @error('password')
@@ -81,7 +81,7 @@
                     <div class="col-md-6">
                         <label class="form-label">Confirm Password</label>
                         <input type="password" name="password_confirmation" class="form-control">
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

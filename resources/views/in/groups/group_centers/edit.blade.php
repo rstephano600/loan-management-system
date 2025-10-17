@@ -29,13 +29,13 @@
 
                 <div class="row g-4">
                     
-                    {{-- Center Code --}}
+                    <!-- {{-- Center Code --}}
                     <div class="col-md-6">
                         <label for="center_code" class="form-label fw-bold">Center Code <span class="text-danger">*</span></label>
                         <input type="text" name="center_code" id="center_code" class="form-control @error('center_code') is-invalid @enderror" 
                                value="{{ old('center_code', $groupCenter->center_code) }}" required placeholder="e.g., GC-001">
                         @error('center_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
+                    </div> -->
                     
                     {{-- Center Name --}}
                     <div class="col-md-6">

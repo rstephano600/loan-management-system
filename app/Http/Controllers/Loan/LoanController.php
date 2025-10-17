@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\Group;
 use App\Models\GroupCenter;
 use App\Models\LoanCategory;
+use App\Models\Employee;
 use App\Models\RepaymentSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,15 +21,67 @@ class LoanController extends Controller
     /**
      * Display a listing of loans.
      */
-    public function index()
-    {
-        $loans = Loan::with(['client', 'group', 'groupCenter', 'loanCategory'])
-            ->orderByDesc('created_at')
-            ->where('is_active', true)
-            ->paginate(15);
+public function index(Request $request)
+{
+    $user = auth()->user();
+    $search = $request->input('search');
 
-        return view('in.loans.loans.index', compact('loans'));
-    }
+    $loans = Loan::with(['client', 'group', 'groupCenter', 'loanCategory', 'collectionOfficer', 'createdBy', 'approvedBy', 'updatedBy'])
+        ->where('is_active', true)
+        ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+            $employee = Employee::where('user_id', $user->id)->first();
+            if ($employee) {
+                $query->where('collection_officer_id', $employee->id);
+            }
+           })
+        ->when($search, function ($query, $search) {
+            $query->whereHas('client', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('collectionOfficer', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('group', function ($q) use ($search) {
+                $q->where('group_name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('createdBy', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('approvedBy', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('updatedBy', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        })
+        // New individual filters
+        ->when($request->filled('created_by'), function ($query) use ($request) {
+            $query->where('created_by', $request->input('created_by'));
+        })
+        ->when($request->filled('approved_by'), function ($query) use ($request) {
+            $query->where('approved_by', $request->input('approved_by'));
+        })
+        ->when($request->filled('updated_by'), function ($query) use ($request) {
+            $query->where('updated_by', $request->input('updated_by'));
+        })
+        ->when($request->filled('disbursed_date'), function ($query) use ($request) {
+            $query->whereDate('disbursement_date', $request->input('disbursed_date'));
+        })
+        // Date range filters for disbursed_date
+        ->when($request->filled('disbursed_date_from'), function ($query) use ($request) {
+            $query->whereDate('disbursement_date', '>=', $request->input('disbursed_date_from'));
+        })
+        ->when($request->filled('disbursed_date_to'), function ($query) use ($request) {
+            $query->whereDate('disbursement_date', '<=', $request->input('disbursed_date_to'));
+        })
+        ->orderByDesc('created_at')
+        ->paginate(30);
+
+    return view('in.loans.loans.index', compact('loans', 'search'));
+}
+
 
     /**
      * Show the form for creating a new loan.
@@ -145,6 +198,12 @@ public function setPreclosureFee(Request $request, $id)
 
     $loan = Loan::findOrFail($id);
 
+    $loanStatus = $loan->status;
+
+    if ($loanStatus === 'refunded') {
+        return back()->with('info', 'Only Aproved Loans loans can be assigned a preclosure fee.');
+    }
+
     if ($loan->status !== 'approved' && $loan->status !== 'active') {
         return back()->with('error', 'Only active loans can be assigned a preclosure fee.');
     }
@@ -159,6 +218,78 @@ public function setPreclosureFee(Request $request, $id)
 
 
 public function markPreclosurePaid($id)
+{
+    $loan = Loan::findOrFail($id);
+
+    if ($loan->preclosure_fee <= 0) {
+        return back()->with('error', 'No preclosure fee set for this loan.');
+    }
+
+    if ($loan->preclosure_fee_paid >= $loan->preclosure_fee) {
+        return back()->with('info', 'Preclosure fee already paid.');
+    }
+
+    DB::transaction(function () use ($loan) {
+        // 🔹 1. Mark all unpaid schedules as paid
+        $schedules = RepaymentSchedule::where('loan_id', $loan->id)
+            ->where('status', '!=', 'paid')
+            ->get();
+
+        foreach ($schedules as $schedule) {
+            $installmentNumber = 'INST-DAY' . $schedule->due_day_number . '-' . strtoupper(Str::random(4)) . '-' . now()->format('Ymd');
+
+            $schedule->update([
+                'installment_number' => $installmentNumber,
+                'principal_paid' => $schedule->principal_due,
+                'interest_paid' => $schedule->interest_due,
+                'penalty_paid' => $schedule->penalty_due,
+                'paid_date' => now(),
+                'status' => 'closed', // ✅ should be 'paid' not 'closed'
+                'paid_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+                'is_paid' => true,
+            ]);
+        }
+
+        // 🔹 2. Update the loan
+        $loan->update([
+            'amount_with_preclosure' => $loan->repayable_amount - $loan->amount_paid,
+            'preclosure_fee_paid' => $loan->preclosure_fee,
+            'status' => 'closed',
+            'closed_by' => Auth::id(),
+            'closed_at' => now(),
+            'closure_reason' => 'Preclosure reasons',
+        ]);
+    });
+
+    return back()->with('success', 'All schedules marked as paid and loan closed successfully.');
+}
+
+public function setRefund(Request $request, $id)
+{
+    $validated = $request->validate([
+        'refunding_reason' => 'required|string',
+    ]);
+
+    $loan = Loan::findOrFail($id);
+
+    if ($loan->status !== 'pending') {
+        return back()->with('error', 'Only Pending loans can be Refunded .');
+    }
+
+    $loan->update([
+        'amount_with_refund' => $loan->amount_paid,
+        'refunded_at' => now(),
+        'refunded_by' =>Auth::id(),
+        'refunding_reason' => $validated['refunding_reason'],
+        'status' => 'refunded',
+    ]);
+
+    return back()->with('success',  $loan->loan_number . " " .' Refunded Successfully.');
+}
+
+
+public function markPAsRefunded($id)
 {
     $loan = Loan::findOrFail($id);
 

@@ -44,7 +44,7 @@ class Client extends Model
         'risk_category',
         'status',
         'blacklist_reason',
-        'assigned_loan_officer_id',
+        'credit_officer_id',
         'kyc_completed',
         'kyc_completed_at',
 
@@ -60,14 +60,20 @@ class Client extends Model
         'sign_image', 
     ];
 
+        protected $casts = [
+        'created_at' => 'date',
+        'date_of_birth' => 'date',
+
+    ];
+
     // Relationships
     public function loanOfficer()
     {
-        return $this->belongsTo(User::class, 'assigned_loan_officer_id');
+        return $this->belongsTo(User::class, 'credit_officer_id');
     }
     public function dropColumn()
     {
-        return $this->belongsTo(Employee::class, 'assigned_loan_officer_id');
+        return $this->belongsTo(Employee::class, 'credit_officer_id');
     }
     // app/Models/Client.php
 public function group()
@@ -83,7 +89,7 @@ public function groupCenter()
 // app/Models/Client.php
 public function assignedLoanOfficer()
 {
-    return $this->belongsTo(Employee::class, 'assigned_loan_officer_id');
+    return $this->belongsTo(Employee::class, 'credit_officer_id');
 }
 
     public function client()

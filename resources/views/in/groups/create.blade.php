@@ -5,104 +5,230 @@
 @section('content')
 <div class="container py-4">
     <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white py-3">
-            <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i> Add New Group</h4>
-        </div>
-        <div class="card-body">
-
-            {{-- Validation Errors --}}
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Whoops!</strong> There were some problems with your input.
-                    <ul class="mb-0 mt-2">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                {{-- Card Header: Strong Primary Color --}}
+                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-person-plus-fill me-2"></i> Register New Group</h4>
                 </div>
-            @endif
+
+        <div class="card-body">
 
             <form action="{{ route('groups.store') }}" method="POST">
                 @csrf
                 <div class="row g-4">
-                    
-            <div class="col-md-6">
-            <label for="group_center_id" class="form-label">Select Group Center</label>
-            <select class="form-select" name="group_center_id" id="group_center_id" required>
-                <option value="">Select Group Center</option>
-                @foreach($groupCenters as $groupCenter)
-                    <option value="{{ $groupCenter->id }}">
-                        {{ $groupCenter->center_name }}
-                    </option>
-                @endforeach
-            </select>
-              </div>
-            <div class="col-md-6">
-            <label for="credit_officer_id" class="form-label">Select Group Center</label>
-            <select class="form-select" name="credit_officer_id" id="credit_officer_id" required>
-                <option value="">Select Credit officer</option>
-                @foreach($creditOfficers as $creditOfficer)
-                    <option value="{{ $creditOfficer->id }}">
-                        {{ $creditOfficer->first_name }} {{ $creditOfficer->last_name }}
-                    </option>
-                @endforeach
-            </select>
-              </div>
-                    {{-- Group Name --}}
+
+                    {{-- ✅ Searchable Group Center --}}
                     <div class="col-md-6">
-                        <label for="group_name" class="form-label fw-bold">Group Name <span class="text-danger">*</span></label>
-                        <input type="text" name="group_name" id="group_name" class="form-control @error('group_name') is-invalid @enderror" 
-                               value="{{ old('group_name') }}" required placeholder="e.g., Kijitonyama Youth Group">
-                        @error('group_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label for="group_center_search" class="form-label fw-bold">Select Group Center</label>
+                        <div class="custom-search-select" data-type="center">
+                            <input type="text" id="group_center_search" placeholder="Search group center..." readonly>
+                            <div class="dropdown-arrow"></div>
+                            <div class="dropdown-list"></div>
+                            <select id="group_center_id" name="group_center_id" required hidden></select>
+                        </div>
                     </div>
-                    
-                    {{-- Group Type --}}
+
+                    {{-- ✅ Searchable Credit Officer --}}
+                    <div class="col-md-6">
+                        <label for="credit_officer_search" class="form-label fw-bold">Select Credit Officer</label>
+                        <div class="custom-search-select" data-type="officer">
+                            <input type="text" id="credit_officer_search" placeholder="Search officer..." readonly>
+                            <div class="dropdown-arrow"></div>
+                            <div class="dropdown-list"></div>
+                            <select id="credit_officer_id" name="credit_officer_id" required hidden></select>
+                        </div>
+                    </div>
+
+                    {{-- Other Inputs --}}
+                    <div class="col-md-6">
+                        <label for="group_name" class="form-label fw-bold">Group Name</label>
+                        <input type="text" name="group_name" id="group_name" class="form-control" required>
+                    </div>
+
                     <div class="col-md-6">
                         <label for="group_type" class="form-label fw-bold">Group Type</label>
-                        {{-- Consider using a select dropdown for defined types (e.g., Savings, Business, etc.) --}}
-                        <input type="text" name="group_type" id="group_type" class="form-control @error('group_type') is-invalid @enderror" 
-                               value="{{ old('group_type') }}" placeholder="e.g., Savings Group">
-                        @error('group_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <input type="text" name="group_type" id="group_type" class="form-control">
                     </div>
-                    
-                    {{-- Location --}}
+
                     <div class="col-md-6">
                         <label for="location" class="form-label fw-bold">Location</label>
-                        <input type="text" name="location" id="location" class="form-control @error('location') is-invalid @enderror" 
-                               value="{{ old('location') }}" placeholder="e.g., Dar es Salaam, Kinondoni">
-                        @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <input type="text" name="location" id="location" class="form-control">
                     </div>
-                    
-                    {{-- Registration Date --}}
+
                     <div class="col-md-6">
                         <label for="registration_date" class="form-label fw-bold">Registration Date</label>
-                        <input type="date" name="registration_date" id="registration_date" class="form-control @error('registration_date') is-invalid @enderror" 
-                               value="{{ old('registration_date') }}">
-                        @error('registration_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <input type="date" name="registration_date" id="registration_date" class="form-control">
                     </div>
 
-                    {{-- Description --}}
                     <div class="col-md-12">
                         <label for="description" class="form-label fw-bold">Description</label>
-                        <textarea name="description" id="description" rows="3" class="form-control @error('description') is-invalid @enderror" 
-                                  placeholder="Provide a brief description of the group's purpose or activities.">{{ old('description') }}</textarea>
-                        @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <textarea name="description" id="description" rows="3" class="form-control"></textarea>
                     </div>
-                    
                 </div>
 
-                {{-- Form Actions --}}
-                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-                    <a href="{{ route('groups.index') }}" class="btn btn-secondary shadow-sm">
-                        <i class="bi bi-x-lg me-1"></i> Cancel
-                    </a>
-                    <button type="submit" class="btn btn-primary shadow-sm">
-                        <i class="bi bi-save me-1"></i> Save Group
-                    </button>
+                <div class="mt-4 text-end">
+                    <a href="{{ route('groups.index') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Group</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+.custom-search-select {
+    position: relative;
+}
+
+.custom-search-select input {
+    width: 100%;
+    padding: 10px 35px 10px 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: white;
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #666;
+    transition: transform 0.3s;
+}
+
+.dropdown-arrow.open {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdown-list {
+    display: none;
+    position: absolute;
+    z-index: 10;
+    background: #fff;
+    border: 2px solid #ddd;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+}
+
+.dropdown-list.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: #f1f1f1;
+}
+</style>
+<script>
+const groupCenters = @json($groupCenters);
+const creditOfficers = @json($creditOfficers);
+
+class SearchableSelect {
+    constructor(container, data) {
+        this.container = container;
+        this.data = data;
+        this.input = container.querySelector('input');
+        this.dropdown = container.querySelector('.dropdown-list');
+        this.arrow = container.querySelector('.dropdown-arrow');
+        this.hiddenSelect = container.querySelector('select');
+        this.isOpen = false;
+        this.filtered = [...data];
+
+        this.init();
+    }
+
+    init() {
+        this.populateHiddenSelect();
+        this.input.addEventListener('click', () => this.toggleDropdown());
+        this.input.addEventListener('input', e => this.handleSearch(e));
+        document.addEventListener('click', e => {
+            if (!this.container.contains(e.target)) this.closeDropdown();
+        });
+        this.renderDropdown();
+    }
+
+    populateHiddenSelect() {
+        this.hiddenSelect.innerHTML = '<option value="">Select...</option>';
+        this.data.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = item.center_name || (item.first_name + ' ' + item.last_name);
+            this.hiddenSelect.appendChild(opt);
+        });
+    }
+
+    toggleDropdown() {
+        this.isOpen ? this.closeDropdown() : this.openDropdown();
+    }
+
+    openDropdown() {
+        this.isOpen = true;
+        this.input.removeAttribute('readonly');
+        this.dropdown.classList.add('show');
+        this.arrow.classList.add('open');
+        this.renderDropdown();
+    }
+
+    closeDropdown() {
+        this.isOpen = false;
+        this.input.setAttribute('readonly', '');
+        this.dropdown.classList.remove('show');
+        this.arrow.classList.remove('open');
+    }
+
+    handleSearch(e) {
+        const term = e.target.value.toLowerCase();
+        this.filtered = this.data.filter(item =>
+            (item.center_name && item.center_name.toLowerCase().includes(term)) ||
+            (item.first_name && item.first_name.toLowerCase().includes(term)) ||
+            (item.last_name && item.last_name.toLowerCase().includes(term))
+        );
+        this.renderDropdown();
+    }
+
+    renderDropdown() {
+        this.dropdown.innerHTML = '';
+        if (this.filtered.length === 0) {
+            this.dropdown.innerHTML = '<div class="dropdown-item text-muted">No results found</div>';
+            return;
+        }
+
+        this.filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.textContent = item.center_name || (item.first_name + ' ' + item.last_name);
+            div.addEventListener('click', () => this.selectItem(item));
+            this.dropdown.appendChild(div);
+        });
+    }
+
+    selectItem(item) {
+        const label = item.center_name || (item.first_name + ' ' + item.last_name);
+        this.input.value = label;
+        this.hiddenSelect.value = item.id;
+        this.closeDropdown();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const centerContainer = document.querySelector('[data-type="center"]');
+    const officerContainer = document.querySelector('[data-type="officer"]');
+    new SearchableSelect(centerContainer, groupCenters);
+    new SearchableSelect(officerContainer, creditOfficers);
+});
+</script>
+
 @endsection
