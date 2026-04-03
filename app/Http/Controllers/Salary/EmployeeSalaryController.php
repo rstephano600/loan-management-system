@@ -177,4 +177,52 @@ class EmployeeSalaryController extends Controller
 
         return redirect()->route('employee_salaries.index')->with('success', 'Employee salary deleted successfully.');
     }
+
+    public function unsigned()
+   {
+    $payment = EmployeeSalaryPayment::findOrFail($id);
+
+    // Ensure the logged-in user is the owner of the salary
+    if (auth()->id() !== $payment->employee_id) {
+        abort(403, 'You are not authorized to sign this salary.');
+    }
+
+    return view('in.employee_salary_payments.sign', compact('payment'));
+}
+    public function sign($id)
+{
+    $payment = EmployeeSalaryPayment::findOrFail($id);
+
+    // Ensure the logged-in user is the owner of the salary
+    if (auth()->id() !== $payment->employee_id) {
+        abort(403, 'You are not authorized to sign this salary.');
+    }
+
+    return view('in.employee_salary_payments.sign', compact('payment'));
+}
+
+public function storeSignature(Request $request, $id)
+{
+    $payment = EmployeeSalaryPayment::findOrFail($id);
+
+    if (auth()->id() !== $payment->employee_id) {
+        abort(403);
+    }
+
+    $request->validate([
+        'signature' => 'required|string', // base64 or file upload
+    ]);
+
+    // You can store base64 signature or handle file upload
+    $payment->update([
+        'employee_acknowledged' => true,
+        'employee_signature' => $request->signature,
+        'employee_signed_at' => now(),
+    ]);
+
+    return redirect()->route('employee_salary_payments.show', $payment->id)
+        ->with('success', 'You have successfully signed your salary payment.');
+}
+
+
 }

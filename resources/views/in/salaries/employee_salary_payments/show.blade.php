@@ -60,6 +60,21 @@
                     <th>Updated By</th>
                     <td>{{ $employeeSalaryPayment->updater?->name ?? '-' }}</td>
                 </tr>
+                   <tr>
+    <th>Employee Acknowledged</th>
+    <td>
+        @if($employeeSalaryPayment->employee_acknowledged)
+            <span class="badge bg-success">Signed on {{ $employeeSalaryPayment->employee_signed_at }}</span>
+            <br>
+            @if($employeeSalaryPayment->employee_signature)
+                <img src="{{ $employeeSalaryPayment->employee_signature }}" alt="Signature" height="80">
+            @endif
+        @else
+            <span class="badge bg-danger">Not yet signed</span>
+        @endif
+    </td>
+</tr>
+
             </table>
 
             <div class="mt-3 text-end">

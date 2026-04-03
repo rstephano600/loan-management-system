@@ -15,11 +15,11 @@
                 <div class="row g-3">
 
                     {{-- Employee (AJAX Select2) --}}
-                    <div class="col-md-6">
+                    <!-- <div class="col-md-6">
                         <label class="form-label fw-bold">Employee</label>
                         <select name="employee_id" id="employee_id" class="form-control select2-employee" required></select>
                         @error('employee_id') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                    </div> -->
 
                     {{-- Salary Record --}}
                     <div class="col-md-6">
@@ -28,7 +28,7 @@
                             <option value="">-- Select Salary Record --</option>
                             @foreach($salaryRecords as $record)
                                 <option value="{{ $record->id }}">
-                                    {{ $record->employee->first_name }} {{ $record->employee->last_name }} - {{ number_format($record->net_salary, 2) }}
+                                    {{ $record->employee->first_name }} {{ $record->employee->last_name }} - {{ number_format($record->net_amount_due, 2) }}
                                 </option>
                             @endforeach
                         </select>

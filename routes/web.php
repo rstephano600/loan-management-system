@@ -28,10 +28,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('users/{user}/toggle-lock', [UserController::class, 'toggleLock'])->name('users.toggle-lock');
     Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
-
 });
-
-
 
 use App\Http\Controllers\Dashboard\DashboardController;
 Route::middleware(['auth'])->group(function () {
@@ -176,17 +173,32 @@ Route::resource('salary_levels', SalaryLevelController::class);
 Route::resource('employee_salaries', EmployeeSalaryController::class);
 Route::get('/employees/search', [EmployeeSalaryController::class, 'searchEmployees'])->name('employees.search');
 
-Route::resource('employee_salary_payments', EmployeeSalaryPaymentController::class);
 
+    Route::resource('employee_salary_payments', EmployeeSalaryPaymentController::class);
+
+    // Route for employee to approve/sign salary payment
+    Route::get('employee_salary_payments/{id}/sign', [EmployeeSalaryPaymentController::class, 'sign'])
+        ->name('employee_salary_payments.sign');
+
+    Route::post('employee_salary_payments/{id}/sign', [EmployeeSalaryPaymentController::class, 'storeSignature'])
+        ->name('employee_salary_payments.storeSignature');
 });
 
 
-Route::prefix('employee-payments')->name('employee_payments.')->group(function () {
+Route::middleware(['auth'])->prefix('employee-payments')->name('employee_payments.')->group(function () {
     Route::get('/', [EmployeeSalaryPaymentController::class, 'index'])->name('index');
     Route::get('/{id}/create', [EmployeeSalaryPaymentController::class, 'create'])->name('create');
     Route::post('/', [EmployeeSalaryPaymentController::class, 'store'])->name('store');
     Route::get('/{id}', [EmployeeSalaryPaymentController::class, 'show'])->name('show');
     Route::delete('/{id}', [EmployeeSalaryPaymentController::class, 'destroy'])->name('destroy');
+});
+
+use App\Http\Controllers\Salary\EmployeeWeeklyAllowanceController;
+Route::middleware(['auth'])->group(function () {
+Route::resource('employee_weekly_allowances', EmployeeWeeklyAllowanceController::class);
+
+// For AJAX search
+Route::get('/search/employees', [EmployeeWeeklyAllowanceController::class, 'searchEmployees'])->name('search.employees');
 });
 
 
@@ -221,6 +233,7 @@ Route::middleware(['auth'])->group(function () {
 
 use App\Http\Controllers\Loan\LoanReportController;
 use App\Http\Controllers\Loan\CollectionSummaryController;
+use App\Http\Controllers\Loan\CollectionSummaryController2;
 
 
 Route::middleware('auth')->group(function () {
@@ -229,9 +242,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/collections/summary/export/pdf', [CollectionSummaryController::class, 'exportPdf'])->name('collections.summary.export.pdf');
     Route::get('/collections/summary/export/pdfwithnodata', [CollectionSummaryController::class, 'exportPdfWithNoData'])->name('collections.summary.export.pdfwithnodata');
 });
+Route::prefix('loans/collections')->name('loans.collections.')->middleware(['auth'])->group(function () {
+    // Main collection summary page
+    Route::get('/summary', [CollectionSummaryController2::class, 'index'])->name('summary.index');
+    
+    // Trending data API (AJAX)
+    Route::get('/summary/trending-data', [CollectionSummaryController2::class, 'getTrendingDataApi'])->name('summary.trending');
+    
+    // Export routes
+    Route::get('/summary/export/excel', [CollectionSummaryController2::class, 'exportExcel'])->name('summary.export.excel');
+    Route::get('/summary/export/pdf', [CollectionSummaryController2::class, 'exportPdf'])->name('summary.export.pdf');
+    Route::get('/summary/print', [CollectionSummaryController2::class, 'print'])->name('summary.print');
+    
+    // AJAX endpoints for cascading dropdowns
+    Route::get('/api/groups-by-center/{centerId}', [CollectionSummaryController2::class, 'getGroupsByCenter'])->name('api.groups-by-center');
+    Route::get('/api/clients-by-group/{groupId}', [CollectionSummaryController2::class, 'getClientsByGroup'])->name('api.clients-by-group');
+    Route::get('/api/loans-by-client/{clientId}', [CollectionSummaryController2::class, 'getLoansByClient'])->name('api.loans-by-client');
+});
 
-
-Route::prefix('reports/loans')->name('reports.loans.')->group(function () {
+Route::middleware(['auth'])->prefix('reports/loans')->name('reports.loans.')->group(function () {
     // Main report page
     Route::get('/', [LoanReportController::class, 'index'])->name('index');
     
@@ -245,7 +274,7 @@ Route::prefix('reports/loans')->name('reports.loans.')->group(function () {
 });
 
 // API routes for cascading dropdowns
-Route::prefix('api')->group(function () {
+Route::middleware(['auth'])->prefix('api')->group(function () {
     Route::get('/groups-by-center/{centerId}', [LoanReportController::class, 'getGroupsByCenter']);
     Route::get('/clients-by-group/{groupId}', [LoanReportController::class, 'getClientsByGroup']);
 });

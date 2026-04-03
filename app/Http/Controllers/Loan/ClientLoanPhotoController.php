@@ -51,7 +51,6 @@ public function index(Request $request)
     if ($request->filled('created_by')) {
         $query->where('created_by', $request->created_by);
     }
-
     // 📊 Total photos after filters
     $totalPhotos = $query->count();
 

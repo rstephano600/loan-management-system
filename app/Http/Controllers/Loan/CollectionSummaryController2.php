@@ -17,7 +17,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\CollectionSummaryExport;
 
-class CollectionSummaryController extends Controller
+class CollectionSummaryController2 extends Controller
 {
     /**
      * Display collection summary with filters
@@ -41,7 +41,7 @@ class CollectionSummaryController extends Controller
         // Get trending data for chart
         $trendingData = $this->getTrendingData($user, $request);
 
-        return view('in.loans.collections.summary.index', compact(
+        return view('in.loans.collections.summary2.index', compact(
             'collections',
             'summary',
             'filterData',
@@ -54,15 +54,21 @@ class CollectionSummaryController extends Controller
      */
     private function buildCollectionQuery($user, Request $request)
     {
-        $query = RepaymentSchedule::with([
-            'loan.client',
-            'loan.group',
-            'loan.groupCenter',
-            'loan.collectionOfficer',
-            'loan.loanCategory',
-            'payer',
-            'creator'
-        ])->where('is_paid', true);
+        $query = RepaymentSchedule::query()
+            ->with([
+                'loan' => function($query) {
+                    $query->with([
+                        'client',
+                        'group',
+                        'groupCenter',
+                        'collectionOfficer',
+                        'loanCategory'
+                    ]);
+                },
+                'payer',
+                'creator'
+            ])
+            ->where('is_paid', true);
 
         // Role-based filtering
         if ($user->role === 'loanofficer' || $user->role === 'loan_officer') {
@@ -429,7 +435,7 @@ class CollectionSummaryController extends Controller
         $collections = $query->orderBy('paid_date', 'desc')->get();
         $summary = $this->calculateSummary($user, $request);
 
-        $pdf = Pdf::loadView('in.loans.collections.summary.pdf', compact('collections', 'summary'))
+        $pdf = Pdf::loadView('in.loans.collections.summary2.pdf', compact('collections', 'summary'))
                   ->setPaper('A4', 'landscape');
 
         return $pdf->download('collection_summary_' . now()->format('Y-m-d') . '.pdf');
@@ -445,7 +451,7 @@ class CollectionSummaryController extends Controller
         $collections = $query->orderBy('paid_date', 'desc')->get();
         $summary = $this->calculateSummary($user, $request);
 
-        return view('in.loans.collections.summary.print', compact('collections', 'summary'));
+        return view('in.loans.collections.summary2.print', compact('collections', 'summary'));
     }
 
     /**
@@ -491,24 +497,3 @@ class CollectionSummaryController extends Controller
         return response()->json($loans);
     }
 }
-
-
-
-
-Route::prefix('loans/collections')->name('loans.collections.')->middleware(['auth'])->group(function () {
-    // Main collection summary page
-    Route::get('/summary', [CollectionSummaryController::class, 'index'])->name('summary.index');
-    
-    // Trending data API (AJAX)
-    Route::get('/summary/trending-data', [CollectionSummaryController::class, 'getTrendingDataApi'])->name('summary.trending');
-    
-    // Export routes
-    Route::get('/summary/export/excel', [CollectionSummaryController::class, 'exportExcel'])->name('summary.export.excel');
-    Route::get('/summary/export/pdf', [CollectionSummaryController::class, 'exportPdf'])->name('summary.export.pdf');
-    Route::get('/summary/print', [CollectionSummaryController::class, 'print'])->name('summary.print');
-    
-    // AJAX endpoints for cascading dropdowns
-    Route::get('/api/groups-by-center/{centerId}', [CollectionSummaryController::class, 'getGroupsByCenter'])->name('api.groups-by-center');
-    Route::get('/api/clients-by-group/{groupId}', [CollectionSummaryController::class, 'getClientsByGroup'])->name('api.clients-by-group');
-    Route::get('/api/loans-by-client/{clientId}', [CollectionSummaryController::class, 'getLoansByClient'])->name('api.loans-by-client');
-});

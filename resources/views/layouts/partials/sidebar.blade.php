@@ -63,7 +63,10 @@
                 <i class="bi bi-person-vcard"></i>
                 <span>Todays Collection</span>
             </a>
-
+            <a href="{{ route('loans.collections.summary.index') }}" class="nav-link {{ Request::is('loans.collections.summary*') ? 'active' : '' }}">
+                <i class="bi bi-wallet2"></i>
+                <span>Daily Collections Two</span>
+            </a>
  <h5 class="mb-0 text-dark">Loan Reqeust</h5>
             <a href="{{ route('loan_request_continueng_client.index') }}" class="nav-link {{ Request::is('loan_request_continueng_client*') ? 'active' : '' }}">
                 <i class="bi bi-person-check"></i>
@@ -85,16 +88,6 @@
             <a href="{{ route('clients.index') }}" class="nav-link {{ Request::is('clients*') ? 'active' : '' }}">
                 <i class="bi bi-person-vcard"></i>
                 <span>All Clients</span>
-            </a>
-
-<h5 class="mb-0 text-dark">Groups and Centers</h5>
-            <a href="{{ route('groups.index') }}" class="nav-link {{ Request::is('groups*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>Groups</span>
-            </a>
-            <a href="{{ route('group_centers.index') }}" class="nav-link {{ Request::is('group_centers*') ? 'active' : '' }}">
-                <i class="bi bi-geo-alt"></i>
-                <span>Groups Center</span>
             </a>
 
 @endif
@@ -120,6 +113,14 @@
             <a href="{{ route('group_centers.index') }}" class="nav-link {{ Request::is('group_centers*') ? 'active' : '' }}">
                 <i class="bi bi-geo-alt"></i>
                 <span>Groups Center</span>
+            </a>
+
+            
+
+<h5 class="mb-0 text-dark">Your Salary</h5>
+            <a href="#" class="nav-link {{ Request::is('#*') ? 'active' : '' }}">
+                <i class="bi bi-geo-alt"></i>
+                <span>Salary Achnollegment</span>
             </a>
         @endif
         
@@ -178,6 +179,10 @@
                 <i class="bi bi-wallet2"></i>
                 <span>Daily Collections</span>
             </a>
+            <a href="{{ route('loans.collections.summary.index') }}" class="nav-link {{ Request::is('loans.collections.summary*') ? 'active' : '' }}">
+                <i class="bi bi-wallet2"></i>
+                <span>Daily Collections Two</span>
+            </a>
             <a href="{{ route('expenses.index') }}" class="nav-link {{ Request::is('expenses*') ? 'active' : '' }}">
                 <i class="bi bi-arrow-up-right-square"></i>
                 <span>Expenses</span>
@@ -201,6 +206,10 @@
             <a href="{{ route('employees.index') }}" class="nav-link {{ Request::is('employees*') ? 'active' : '' }}">
                 <i class="bi bi-person-lines-fill"></i>
                 <span>Employees</span>
+            </a>
+            <a href="{{ route('employee_weekly_allowances.index') }}" class="nav-link {{ Request::is('employee_weekly_allowances*') ? 'active' : '' }}">
+                <i class="bi bi-person-lines-fill"></i>
+                <span>Employees Allowances</span>
             </a>
             <a href="{{ route('employee_salary_payments.index') }}" class="nav-link {{ Request::is('employee_salary_payments*') ? 'active' : '' }}">
                 <i class="bi bi-credit-card"></i>

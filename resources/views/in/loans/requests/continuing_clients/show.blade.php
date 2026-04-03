@@ -12,7 +12,7 @@
         <div class="btn-group">
             {{-- Approve/Disburse Button (Conditional) --}}
             @if(in_array(Auth::user()->role, ['manager', 'Admin']) && $loan->status === 'pending')
-                <a href="{{ route('loans.approve.edit', $loan->id) }}" class="btn btn-success d-flex align-items-center">
+                <a href="#e" class="btn btn-success d-flex align-items-center">
                     <i class="bi bi-check-circle me-2"></i> Approve/Disburse Loan
                 </a>
             @endif

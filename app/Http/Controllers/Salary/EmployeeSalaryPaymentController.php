@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\EmployeeSalaryPayment;
 use App\Models\EmployeeSalary;
+use App\Models\SalaryLevel;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,6 +59,9 @@ class EmployeeSalaryPaymentController extends Controller
             'employee_id' => 'nullable|exists:employees,id',
             'payment_date' => 'required|date',
             'amount_paid' => 'required|numeric|min:0',
+            'insurance_amount' => 'nullable|numeric|min:0',
+            'nssf' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
             'currency' => 'required|string|max:10',
             'payment_method' => 'nullable|string|max:100',
             'reference_number' => 'nullable|string|max:100',
@@ -69,6 +73,10 @@ class EmployeeSalaryPaymentController extends Controller
         if ($request->hasFile('attachment')) {
             $validated['attachment'] = $request->file('attachment')->store('salary_payments', 'public');
         }
+
+        $employeeSalary = EmployeeSalary::findOrFail($validated['employee_salary_id']);
+
+        $validated['employee_id'] = $employeeSalary->employee_id;
 
         $validated['created_by'] = Auth::id();
 
@@ -82,6 +90,7 @@ class EmployeeSalaryPaymentController extends Controller
      */
     public function show(EmployeeSalaryPayment $employeeSalaryPayment)
     {
+        $employeeSalaryPayment->load(['employee', 'salaryLevel']);
         return view('in.salaries.employee_salary_payments.show', compact('employeeSalaryPayment'));
     }
 
@@ -104,7 +113,9 @@ class EmployeeSalaryPaymentController extends Controller
             'employee_id' => 'nullable|exists:employees,id',
             'payment_date' => 'required|date',
             'amount_paid' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:10',
+            'insurance_amount' => 'nullable|numeric|min:0',
+            'nssf' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
             'payment_method' => 'nullable|string|max:100',
             'reference_number' => 'nullable|string|max:100',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -112,12 +123,17 @@ class EmployeeSalaryPaymentController extends Controller
             'status' => 'required|in:pending,confirmed,cancelled',
         ]);
 
+
         if ($request->hasFile('attachment')) {
             if ($employeeSalaryPayment->attachment) {
                 Storage::disk('public')->delete($employeeSalaryPayment->attachment);
             }
             $validated['attachment'] = $request->file('attachment')->store('salary_payments', 'public');
         }
+
+        $employeeSalary = EmployeeSalary::findOrFail($validated['employee_salary_id']);
+
+        $validated['employee_id'] = $employeeSalary->employee_id;
 
         $validated['updated_by'] = Auth::id();
 

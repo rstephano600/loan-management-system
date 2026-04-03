@@ -15,14 +15,6 @@
 
                 <div class="row g-3">
                     {{-- Employee --}}
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Employee</label>
-                        <select name="employee_id" id="employee_id" class="form-control select2-employee" required>
-                            <option value="{{ $employeeSalaryPayment->employee->id }}" selected>
-                                {{ $employeeSalaryPayment->employee->first_name }} {{ $employeeSalaryPayment->employee->last_name }}
-                            </option>
-                        </select>
-                    </div>
 
                     {{-- Salary Record --}}
                     <div class="col-md-6">
@@ -30,7 +22,7 @@
                         <select name="employee_salary_id" class="form-control" required>
                             @foreach($salaryRecords as $record)
                                 <option value="{{ $record->id }}" {{ $employeeSalaryPayment->employee_salary_id == $record->id ? 'selected' : '' }}>
-                                    {{ $record->employee->first_name }} {{ $record->employee->last_name }} - {{ number_format($record->net_salary, 2) }}
+                                    {{ $record->employee->first_name }} {{ $record->employee->last_name }} - {{ number_format($record->net_amount_due, 2) }}
                                 </option>
                             @endforeach
                         </select>

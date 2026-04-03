@@ -261,12 +261,12 @@
                                 <h5 class="text-success">{{ number_format($summary['filtered']['principal'], 2) }}</h5>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <!-- <div class="col-md-3">
                             <div class="mb-2">
                                 <small class="text-muted">Interest Collected</small>
                                 <h5 class="text-info">{{ number_format($summary['filtered']['interest'], 2) }}</h5>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="col-md-3">
                             <div class="mb-2">
                                 <small class="text-muted">Penalty Collected</small>
@@ -297,7 +297,7 @@
         </div>
     </div>
 
-    <!-- Collections Table -->
+   <!-- Collections Table -->
     <div class="card shadow">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Collection Details</h6>
@@ -315,7 +315,7 @@
                             <th>Center</th>
                             <th>Officer</th>
                             <th class="text-right">Principal</th>
-                            <th class="text-right">Interest</th>
+                            <!-- <th class="text-right">Interest</th> -->
                             <th class="text-right">Penalty</th>
                             <th class="text-right">Total</th>
                             <th>Method</th>
@@ -325,25 +325,39 @@
                     <tbody>
                         @forelse($collections as $collection)
                         <tr>
-                            <td>{{ $collection->paid_date ? $collection : '' }}</td>
-                            <td class="text-center">{{ $collection->installment_number }}</td>
-                            <td>{{ $collection->loan->loan_number ?? 'N/A' }}</td>
-                            <td>{{ $collection->loan->client->first_name ?? '' }} {{ $collection->loan->client->last_name ?? '' }}</td>
-                            <td>{{ $collection->loan->group->group_name ?? 'N/A' }}</td>
-                            <td>{{ $collection->loan->groupCenter->center_name ?? 'N/A' }}</td>
-                            <td>{{ $collection->loan->collectionOfficer->full_name ?? 'N/A' }}</td>
-                            <td class="text-right">{{ number_format($collection->principal_paid, 2) }}</td>
-                            <td class="text-right">{{ number_format($collection->interest_paid, 2) }}</td>
-                            <td class="text-right">{{ number_format($collection->penalty_paid, 2) }}</td>
-                            <td class="text-right font-weight-bold">{{ number_format($collection->total_paid, 2) }}</td>
                             <td>
-                                <span class="badge badge-info">{{ ucfirst($collection->payment_method ?? 'N/A') }}</span>
+                                @if($collection->paid_date)
+                                    {{ \Carbon\Carbon::parse($collection->paid_date)->format('d/m/Y') }}
+                                @else
+                                    N/A
+                                @endif
                             </td>
-                            <td>{{ $collection->payer->full_name ?? 'System' }}</td>
+                            <td class="text-center">{{ $collection->installment_number ?? '-' }}</td>
+                            <td>{{ optional($collection->loan)->loan_number ?? 'N/A' }}</td>
+                            <td>
+                                @if($collection->loan && $collection->loan->client)
+                                    {{ $collection->loan->client->first_name }} {{ $collection->loan->client->last_name }}
+                                @else
+                                    N/A
+                                @endif
+                            </td>
+                            <td>{{ optional(optional($collection->loan)->group)->group_name ?? 'N/A' }}</td>
+                            <td>{{ optional(optional($collection->loan)->groupCenter)->center_name ?? 'N/A' }}</td>
+                            <td>{{ optional(optional($collection->loan)->collectionOfficer)->full_name ?? 'N/A' }}</td>
+                            <td class="text-right">{{ number_format($collection->principal_paid ?? 0, 2) }}</td>
+                            <!-- <td class="text-right">{{ number_format($collection->interest_paid ?? 0, 2) }}</td> -->
+                            <td class="text-right">{{ number_format($collection->penalty_paid ?? 0, 2) }}</td>
+                            <td class="text-right font-weight-bold">{{ number_format($collection->total_paid ?? 0, 2) }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ ucfirst($collection->payment_method ?? 'cash') }}</span>
+                            </td>
+                            <td>{{ optional($collection->payer)->full_name ?? 'System' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="text-center">No collections found</td>
+                            <td colspan="13" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle"></i> No collections found matching your filters
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -351,7 +365,7 @@
                         <tr>
                             <th colspan="7" class="text-right">Page Totals:</th>
                             <th class="text-right">{{ number_format($collections->sum('principal_paid'), 2) }}</th>
-                            <th class="text-right">{{ number_format($collections->sum('interest_paid'), 2) }}</th>
+                            <!-- <th class="text-right">{{ number_format($collections->sum('interest_paid'), 2) }}</th> -->
                             <th class="text-right">{{ number_format($collections->sum('penalty_paid'), 2) }}</th>
                             <th class="text-right">{{ number_format($collections->sum('total_paid'), 2) }}</th>
                             <th colspan="2"></th>

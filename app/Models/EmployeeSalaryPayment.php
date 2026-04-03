@@ -14,6 +14,9 @@ class EmployeeSalaryPayment extends Model
         'employee_id',
         'payment_date',
         'amount_paid',
+        'insurance_amount',
+        'nssf',
+        'tax',
         'currency',
         'payment_method',
         'reference_number',
@@ -22,8 +25,10 @@ class EmployeeSalaryPayment extends Model
         'created_by',
         'updated_by',
         'status',
+        'employee_acknowledged',
+        'employee_signature',
+        'employee_signed_at',
     ];
-
     /**
      * Relationships
      */
@@ -46,4 +51,13 @@ class EmployeeSalaryPayment extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+        public function salaryLevel()
+    {
+        return $this->belongsTo(SalaryLevel::class);
+    }
+    public function isSigned()
+{
+    return $this->employee_acknowledged && $this->employee_signature;
+}
+
 }
