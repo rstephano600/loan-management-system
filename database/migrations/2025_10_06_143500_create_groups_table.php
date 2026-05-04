@@ -14,7 +14,6 @@ public function up(): void
 
     Schema::create('groups', function (Blueprint $table) {
         $table->id();
-        
         $table->string('group_code')->unique();
         $table->string('group_name');
         $table->string('group_type')->nullable();

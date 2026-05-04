@@ -1,245 +1,343 @@
 <aside class="sidebar" id="sidebar">
-    @php
-        // Get the authenticated user
-        $user = Auth::user();
-        
-        // Define simple permission variables using the new methods
-        $canManageAll = $user->isAdmin();
-        $isLoanOfficer = $user->isLoanOfficer();
-        $canManageHisData = $user->isLoanOfficer();
-        $canManageLoans = $user->isAdmin() || $user->isManagement();
-        $canViewClients = $user->isAdmin() || $user->isManagement() || $user->hasRole('marketing_officer');
-        $canManageGroups = $user->isAdmin() || $user->isManagement() || $user->isLoanOfficer() || $user->hasRole('marketing_officer');
-        $canManageFinance = $user->isAdmin() || $user->isManagement() || $user->isFinance();
-        $canManageHR = $user->isAdmin() || $user->isManagement() || $user->isHR();
-        $isClient = $user->isClient();
+@php
+    $user         = Auth::user();
+    $isAdmin      = $user->isAdmin();
+    $isManagement = $user->isManagement();
+    $isLoanOfficer= $user->isLoanOfficer();
+    $isFinance    = $user->isFinance();
+    $isHR         = $user->isHR();
+    $isClient     = $user->isClient();
+    $isMarketing  = $user->hasRole('marketing_officer');
 
-    @endphp
+    // Derived permission groups
+    $canAdmin     = $isAdmin;
+    $canLoans     = $isAdmin || $isManagement;
+    $canClients   = $isAdmin || $isManagement || $isMarketing;
+    $canGroups    = $isAdmin || $isManagement || $isLoanOfficer || $isMarketing;
+    $canFinance   = $isAdmin || $isManagement || $isFinance;
+    $canHR        = $isAdmin || $isManagement || $isHR;
+@endphp
 
+    {{-- ── Brand ── --}}
+    <a href="{{ route('home') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+            <img src="{{ asset('images/arbifA.png') }}" alt="ArBif">
+        </div>
+        <div class="sidebar-brand-text">
+            <strong>ArBif</strong>
+            <small>Management System</small>
+        </div>
+    </a>
 
-
-
-
-    <div class="text-center py-4 border-bottom border-white border-opacity-25">
-        <h5 class="text-white mb-0">
-            <i class="bi bi-building"></i>
-            <span class="ms-2" id="logo-text">ArBif System</span>
-        </h5>
-    </div>
-    
-    <div class="px-3 py-4 border-bottom border-white border-opacity-25">
-        <div class="d-flex align-items-center">
-            <div class="user-avatar me-3">
-                {{ strtoupper(substr($user->username ?? 'U', 0, 2)) }}
-            </div>
-            <div class="user-info d-flex flex-column">
-                <h6 class="mb-0 text-white">{{ $user->username }}</h6>
-                <small class="text-light">
-                    @php
-                        $role = $user->role;
-                        $roleClass = 'badge-' . str_replace('_', '-', strtolower($role));
-                    @endphp
-                    <!-- <span class="badge {{ $roleClass }} role-badge">
-                        {{ ucfirst(str_replace('_', ' ', $role)) }}
-                    </span> -->
-                </small>
+    {{-- ── Logged-in user ── --}}
+    <div class="sidebar-user">
+        <div class="user-avatar">
+            {{ strtoupper(substr($user->username ?? 'U', 0, 2)) }}
+        </div>
+        <div class="user-info">
+            <div class="user-name">{{ $user->username ?? 'User' }}</div>
+            <div class="user-role">
+                {{ ucfirst(str_replace('_', ' ', $user->role ?? 'Staff')) }}
             </div>
         </div>
     </div>
-    
-    <nav class="nav flex-column p-3">
-        <a href="{{ route('dashboard') }}" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
+
+    {{-- ══════════════════════════════════════════
+         NAVIGATION
+    ══════════════════════════════════════════ --}}
+    <nav class="sidebar-nav">
+
+        {{-- ── Dashboard (everyone) ── --}}
+        <a href="{{ route('dashboard') }}"
+           class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}"
+           data-label="Dashboard">
             <i class="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
+            <span class="nav-label">Dashboard</span>
         </a>
 
+        {{-- ═══════════════ LOAN OFFICER SECTION ═══════════════
+             Only for loan officers who are NOT admin/management
+             (admins see a fuller loans section below)
+        ══════════════════════════════════════════════════════ --}}
+        @if($isLoanOfficer && !$canLoans)
 
-        <!-- LOAN OFFICERS -->
+            <div class="nav-section-label">Collections</div>
 
-@if($isLoanOfficer)
- <h5 class="mb-0 text-dark">Collections</h5>
-            <hr class="dropdown-divider my-2 border-white border-opacity-25">
-            <a href="{{ route('collections.summary.index') }}" class="nav-link {{ Request::is('collections.summary.index*') ? 'active' : '' }}">
-                <i class="bi bi-person-vcard"></i>
-                <span>Todays Collection</span>
+            <a href="{{ route('collections.summary.index') }}"
+               class="nav-link {{ Request::is('collections/summary*') ? 'active' : '' }}"
+               data-label="Today's Collection">
+                <i class="bi bi-collection"></i>
+                <span class="nav-label">Today's Collection</span>
             </a>
-            <a href="{{ route('loans.collections.summary.index') }}" class="nav-link {{ Request::is('loans.collections.summary*') ? 'active' : '' }}">
+
+            <a href="{{ route('loans.collections.summary.index') }}"
+               class="nav-link {{ Request::is('loans/collections/summary*') ? 'active' : '' }}"
+               data-label="Daily Collections">
                 <i class="bi bi-wallet2"></i>
-                <span>Daily Collections Two</span>
-            </a>
- <h5 class="mb-0 text-dark">Loan Reqeust</h5>
-            <a href="{{ route('loan_request_continueng_client.index') }}" class="nav-link {{ Request::is('loan_request_continueng_client*') ? 'active' : '' }}">
-                <i class="bi bi-person-check"></i>
-                <span>Continuing Client Loans</span>
+                <span class="nav-label">Daily Collections</span>
             </a>
 
-            <a href="{{ route('loan_request_new_client.index') }}" class="nav-link {{ Request::is('loan_request_new_client*') ? 'active' : '' }}">
+            <div class="nav-section-label">Loan Requests</div>
+
+            <a href="{{ route('loan_request_new_client.index') }}"
+               class="nav-link {{ Request::is('loan_request_new_client*') ? 'active' : '' }}"
+               data-label="New Client Loans">
                 <i class="bi bi-person-plus"></i>
-                <span>New Client Loans</span>
+                <span class="nav-label">New Client Loans</span>
             </a>
 
-<h5 class="mb-0 text-dark">Your Loans</h5>
-            <a href="{{ route('loans.index') }}" class="nav-link {{ Request::is('loans') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i>
-                <span>All Loans</span>
-            </a>
-            
-<h5 class="mb-0 text-dark">Your Loans</h5>
-            <a href="{{ route('clients.index') }}" class="nav-link {{ Request::is('clients*') ? 'active' : '' }}">
-                <i class="bi bi-person-vcard"></i>
-                <span>All Clients</span>
+            <a href="{{ route('loan_request_continueng_client.index') }}"
+               class="nav-link {{ Request::is('loan_request_continueng_client*') ? 'active' : '' }}"
+               data-label="Continuing Loans">
+                <i class="bi bi-person-check"></i>
+                <span class="nav-label">Continuing Client Loans</span>
             </a>
 
-@endif
+            <div class="nav-section-label">My Work</div>
 
-        @if($canManageAll)
-            <hr class="dropdown-divider my-2 border-white border-opacity-25">
-             <a href="{{ route('users.index') }}" class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
-                <i class="bi bi-person"></i>
-                <span>System Users</span>
-         </a>
-        @endif
+            <a href="{{ route('loans.index') }}"
+               class="nav-link {{ Request::is('loans') ? 'active' : '' }}"
+               data-label="Loans">
+                <i class="bi bi-cash-stack"></i>
+                <span class="nav-label">All Loans</span>
+            </a>
 
-        @if($canManageHisData)
-
-
-        @endif
-
-        @if($canManageGroups)
-            <a href="{{ route('groups.index') }}" class="nav-link {{ Request::is('groups*') ? 'active' : '' }}">
+            <a href="{{ route('clients.index') }}"
+               class="nav-link {{ Request::is('clients*') ? 'active' : '' }}"
+               data-label="Clients">
                 <i class="bi bi-people"></i>
-                <span>Groups</span>
-            </a>
-            <a href="{{ route('group_centers.index') }}" class="nav-link {{ Request::is('group_centers*') ? 'active' : '' }}">
-                <i class="bi bi-geo-alt"></i>
-                <span>Groups Center</span>
+                <span class="nav-label">All Clients</span>
             </a>
 
-            
-
-<h5 class="mb-0 text-dark">Your Salary</h5>
-            <a href="#" class="nav-link {{ Request::is('#*') ? 'active' : '' }}">
-                <i class="bi bi-geo-alt"></i>
-                <span>Salary Achnollegment</span>
-            </a>
         @endif
-        
-        @if($canManageLoans)
-            <hr class="dropdown-divider my-2 border-white border-opacity-25">
-            <a href="{{ route('loans.index') }}" class="nav-link {{ Request::is('loans') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i>
-                <span>All Loans</span>
+
+        {{-- ═══════════════ GROUPS (shared) ════════════════════ --}}
+        @if($canGroups)
+
+            <div class="nav-section-label">Groups</div>
+
+            <a href="{{ route('groups.index') }}"
+               class="nav-link {{ Request::is('groups*') ? 'active' : '' }}"
+               data-label="Groups">
+                <i class="bi bi-people"></i>
+                <span class="nav-label">Groups</span>
             </a>
 
-            <a href="{{ route('loan_request_continueng_client.index') }}" class="nav-link {{ Request::is('loan_request_continueng_client*') ? 'active' : '' }}">
-                <i class="bi bi-person-check"></i>
-                <span>Continuing Client Loans</span>
+            <a href="{{ route('group_centers.index') }}"
+               class="nav-link {{ Request::is('group_centers*') ? 'active' : '' }}"
+               data-label="Group Centers">
+                <i class="bi bi-geo-alt"></i>
+                <span class="nav-label">Group Centers</span>
             </a>
 
-            <a href="{{ route('loan_request_new_client.index') }}" class="nav-link {{ Request::is('loan_request_new_client*') ? 'active' : '' }}">
+        @endif
+
+        {{-- ═══════════════ LOANS (admin/management) ══════════ --}}
+        @if($canLoans)
+
+            <div class="nav-section-label">Loans</div>
+
+            <a href="{{ route('loans.index') }}"
+               class="nav-link {{ Request::is('loans') ? 'active' : '' }}"
+               data-label="All Loans">
+                <i class="bi bi-cash-stack"></i>
+                <span class="nav-label">All Loans</span>
+            </a>
+
+            <a href="{{ route('loan_request_new_client.index') }}"
+               class="nav-link {{ Request::is('loan_request_new_client*') ? 'active' : '' }}"
+               data-label="New Client Loans">
                 <i class="bi bi-person-plus"></i>
-                <span>New Client Loans</span>
+                <span class="nav-label">New Client Loans</span>
             </a>
 
-            <a href="{{ route('loan-approvals.index') }}" class="nav-link {{ Request::is('loan-approvals*') ? 'active' : '' }}">
+            <a href="{{ route('loan_request_continueng_client.index') }}"
+               class="nav-link {{ Request::is('loan_request_continueng_client*') ? 'active' : '' }}"
+               data-label="Continuing Loans">
+                <i class="bi bi-person-check"></i>
+                <span class="nav-label">Continuing Client Loans</span>
+            </a>
+
+            <a href="{{ route('loan-approvals.index') }}"
+               class="nav-link {{ Request::is('loan-approvals*') ? 'active' : '' }}"
+               data-label="Loan Approvals">
                 <i class="bi bi-check2-circle"></i>
-                <span>Client Loans Approval</span>
+                <span class="nav-label">Loan Approvals</span>
             </a>
 
-             <a href="{{ route('loan_categories.index') }}" class="nav-link {{ Request::is('loan_categories*') ? 'active' : '' }}">
+            <a href="{{ route('loan_categories.index') }}"
+               class="nav-link {{ Request::is('loan_categories*') ? 'active' : '' }}"
+               data-label="Loan Categories">
                 <i class="bi bi-tags"></i>
-                <span>Loans categories</span>
+                <span class="nav-label">Loan Categories</span>
             </a>
-            <a href="{{ route('client-loan-photos.index') }}" class="nav-link {{ Request::is('client-loan-photos*') ? 'active' : '' }}">
-                <i class="bi bi-image"></i>
-                <span>Client loan photos</span>
+
+            <a href="{{ route('client-loan-photos.index') }}"
+               class="nav-link {{ Request::is('client-loan-photos*') ? 'active' : '' }}"
+               data-label="Loan Photos">
+                <i class="bi bi-images"></i>
+                <span class="nav-label">Client Loan Photos</span>
             </a>
-            <a href="{{ route('loans_dashboard.dashboard') }}" class="nav-link {{ Request::is('loans_dashboard*') ? 'active' : '' }}">
+
+            <a href="{{ route('loans_dashboard.dashboard') }}"
+               class="nav-link {{ Request::is('loans_dashboard*') ? 'active' : '' }}"
+               data-label="Loans Dashboard">
                 <i class="bi bi-bar-chart"></i>
-                <span>Loans Dashboard</span>
+                <span class="nav-label">Loans Dashboard</span>
             </a>
+
         @endif
 
-        @if($canViewClients)
-            <hr class="dropdown-divider my-2 border-white border-opacity-25">
-             <a href="{{ route('clients.index') }}" class="nav-link {{ Request::is('clients*') ? 'active' : '' }}">
-                <i class="bi bi-person-vcard"></i>
-                <span>All Clients</span>
-            </a>
-            <a href="{{ route('collections.summary.index') }}" class="nav-link {{ Request::is('collections.summary.index*') ? 'active' : '' }}">
-                <i class="bi bi-person-vcard"></i>
-                <span>Todays Collection</span>
-            </a>
-        @endif
-        
+        {{-- ═══════════════ CLIENTS ════════════════════════════ --}}
+        @if($canClients)
 
-        @if($canManageFinance)
-            <hr class="dropdown-divider my-2 border-white border-opacity-25">
-            <a href="{{ route('daily_collections.index') }}" class="nav-link {{ Request::is('daily_collections*') ? 'active' : '' }}">
-                <i class="bi bi-wallet2"></i>
-                <span>Daily Collections</span>
+            <div class="nav-section-label">Clients</div>
+
+            <a href="{{ route('clients.index') }}"
+               class="nav-link {{ Request::is('clients*') ? 'active' : '' }}"
+               data-label="Clients">
+                <i class="bi bi-person-vcard"></i>
+                <span class="nav-label">All Clients</span>
             </a>
-            <a href="{{ route('loans.collections.summary.index') }}" class="nav-link {{ Request::is('loans.collections.summary*') ? 'active' : '' }}">
-                <i class="bi bi-wallet2"></i>
-                <span>Daily Collections Two</span>
+
+        @endif
+
+        {{-- ═══════════════ FINANCE ════════════════════════════ --}}
+        @if($canFinance)
+
+            <div class="nav-section-label">Finance</div>
+
+            <a href="{{ route('collections.summary.index') }}"
+               class="nav-link {{ Request::is('collections/summary*') ? 'active' : '' }}"
+               data-label="Today's Collection">
+                <i class="bi bi-collection"></i>
+                <span class="nav-label">Today's Collection</span>
             </a>
-            <a href="{{ route('expenses.index') }}" class="nav-link {{ Request::is('expenses*') ? 'active' : '' }}">
+
+            <a href="{{ route('daily_collections.index') }}"
+               class="nav-link {{ Request::is('daily_collections*') ? 'active' : '' }}"
+               data-label="Daily Collections">
+                <i class="bi bi-wallet2"></i>
+                <span class="nav-label">Daily Collections</span>
+            </a>
+
+            <a href="{{ route('expenses.index') }}"
+               class="nav-link {{ Request::is('expenses*') ? 'active' : '' }}"
+               data-label="Expenses">
                 <i class="bi bi-arrow-up-right-square"></i>
-                <span>Expenses</span>
+                <span class="nav-label">Expenses</span>
             </a>
-            <a href="{{ route('expense-categories.index') }}" class="nav-link {{ Request::is('expense-categories*') ? 'active' : '' }}">
+
+            <a href="{{ route('expense-categories.index') }}"
+               class="nav-link {{ Request::is('expense-categories*') ? 'active' : '' }}"
+               data-label="Expense Categories">
                 <i class="bi bi-card-list"></i>
-                <span>Expense Categories</span>
+                <span class="nav-label">Expense Categories</span>
             </a>
-             <a href="{{ route('donations.index') }}" class="nav-link {{ Request::is('donations*') ? 'active' : '' }}">
+
+            <a href="{{ route('donations.index') }}"
+               class="nav-link {{ Request::is('donations*') ? 'active' : '' }}"
+               data-label="Donations">
                 <i class="bi bi-heart"></i>
-                <span>Donations & Supports</span>
+                <span class="nav-label">Donations &amp; Support</span>
             </a>
+
         @endif
 
-        @if($canManageHR)
-             <hr class="dropdown-divider my-2 border-white border-opacity-25">
-            <a href="{{ route('reports.loans.index') }}" class="nav-link {{ Request::is('reports.loans*') ? 'active' : '' }}">
-                <i class="bi bi-chart"></i>
-                <span>Loan Reports</span>
-            </a>
-            <a href="{{ route('employees.index') }}" class="nav-link {{ Request::is('employees*') ? 'active' : '' }}">
-                <i class="bi bi-person-lines-fill"></i>
-                <span>Employees</span>
-            </a>
-            <a href="{{ route('employee_weekly_allowances.index') }}" class="nav-link {{ Request::is('employee_weekly_allowances*') ? 'active' : '' }}">
-                <i class="bi bi-person-lines-fill"></i>
-                <span>Employees Allowances</span>
-            </a>
-            <a href="{{ route('employee_salary_payments.index') }}" class="nav-link {{ Request::is('employee_salary_payments*') ? 'active' : '' }}">
-                <i class="bi bi-credit-card"></i>
-                <span>Employee Salaries Payments</span>
-            </a>
-            <a href="{{ route('employee_salaries.index') }}" class="nav-link {{ Request::is('employee_salaries*') ? 'active' : '' }}">
-                <i class="bi bi-cash"></i>
-                <span>Employee Salaries</span>
-            </a>
-            <a href="{{ route('salary_levels.index') }}" class="nav-link {{ Request::is('salary_levels*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-data"></i>
-                <span>Salary Levels</span>
-            </a>
-        @endif 
+        {{-- ═══════════════ HR ══════════════════════════════════ --}}
+        @if($canHR)
 
-        
-        <hr class="dropdown-divider my-2 border-white border-opacity-25">
-        
-        <a href="{{ route('profile.show') }}" class="nav-link {{ Request::is('profile*') ? 'active' : '' }}">
+            <div class="nav-section-label">HR &amp; Payroll</div>
+
+            <a href="{{ route('reports.loans.index') }}"
+               class="nav-link {{ Request::is('reports/loans*') ? 'active' : '' }}"
+               data-label="Loan Reports">
+                <i class="bi bi-file-bar-graph"></i>
+                <span class="nav-label">Loan Reports</span>
+            </a>
+
+            <a href="{{ route('employees.index') }}"
+               class="nav-link {{ Request::is('employees*') ? 'active' : '' }}"
+               data-label="Employees">
+                <i class="bi bi-person-lines-fill"></i>
+                <span class="nav-label">Employees</span>
+            </a>
+
+            <a href="{{ route('employee_weekly_allowances.index') }}"
+               class="nav-link {{ Request::is('employee_weekly_allowances*') ? 'active' : '' }}"
+               data-label="Allowances">
+                <i class="bi bi-gift"></i>
+                <span class="nav-label">Weekly Allowances</span>
+            </a>
+
+            <a href="{{ route('employee_salaries.index') }}"
+               class="nav-link {{ Request::is('employee_salaries*') ? 'active' : '' }}"
+               data-label="Salaries">
+                <i class="bi bi-cash"></i>
+                <span class="nav-label">Employee Salaries</span>
+            </a>
+
+            <a href="{{ route('employee_salary_payments.index') }}"
+               class="nav-link {{ Request::is('employee_salary_payments*') ? 'active' : '' }}"
+               data-label="Salary Payments">
+                <i class="bi bi-credit-card"></i>
+                <span class="nav-label">Salary Payments</span>
+            </a>
+
+            <a href="{{ route('salary_levels.index') }}"
+               class="nav-link {{ Request::is('salary_levels*') ? 'active' : '' }}"
+               data-label="Salary Levels">
+                <i class="bi bi-clipboard-data"></i>
+                <span class="nav-label">Salary Levels</span>
+            </a>
+
+        @endif
+
+        {{-- ═══════════════ ADMIN / SYSTEM ════════════════════ --}}
+        @if($canAdmin)
+
+            <div class="nav-section-label">Administration</div>
+
+            <a href="{{ route('users.index') }}"
+               class="nav-link {{ Request::is('users*') ? 'active' : '' }}"
+               data-label="System Users">
+                <i class="bi bi-person-gear"></i>
+                <span class="nav-label">System Users</span>
+            </a>
+
+            <a href="{{ route('usersRole') }}"
+               class="nav-link {{ Request::is('usersRole*') ? 'active' : '' }}"
+               data-label="User Roles">
+                <i class="bi bi-shield-check"></i>
+                <span class="nav-label">User Roles</span>
+            </a>
+
+        @endif
+
+        {{-- ═══════════════ ACCOUNT (everyone) ═══════════════ --}}
+        <div class="nav-section-label">Account</div>
+
+        <a href="{{ route('profile.show') }}"
+           class="nav-link {{ Request::is('profile*') ? 'active' : '' }}"
+           data-label="My Profile">
             <i class="bi bi-person-circle"></i>
-            <span>My Profile</span>
+            <span class="nav-label">My Profile</span>
         </a>
 
-        <form method="POST" action="{{ route('logout') }}" class="mt-auto">
+    </nav>{{-- /.sidebar-nav --}}
+
+    {{-- ── Logout pinned at bottom ── --}}
+    <div class="sidebar-footer">
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" 
-                class="nav-link text-start w-100" style="background: none; border: none;">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Logout</span>
+            <button type="submit"
+                    class="nav-link w-100 text-start border-0"
+                    data-label="Logout"
+                    style="background:transparent;cursor:pointer;">
+                <i class="bi bi-box-arrow-left"></i>
+                <span class="nav-label">Logout</span>
             </button>
         </form>
-    </nav>
+    </div>
+
 </aside>

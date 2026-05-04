@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -10,6 +9,18 @@ use App\Helpers\LogActivity;
 
 class DashboardController extends Controller
 {
+    public function configurationside()
+    {
+        return view('in.configuration.configurationside');
+    }
+    public function workingside()
+    {
+        return view('in.working.workingside');
+    }
+    public function reportingside()
+    {
+        return view('in.reporting.reportingside');
+    }
     public function index()
     {
         $user = Auth::user();

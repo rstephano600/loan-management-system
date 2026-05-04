@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('group_members', function (Blueprint $table) {
             $table->id();
-            
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
             $table->string('member_code')->unique();
             $table->string('role_in_group')->nullable();
             $table->integer('created_by');
             $table->integer('updated_by')->nullable();
-
             $table->timestamps();
     });
 }

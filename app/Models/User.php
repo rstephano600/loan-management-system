@@ -61,7 +61,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
-        'status',
+        'Status',
         'created_by',
         'updated_by',
         'is_loged',
@@ -69,6 +69,7 @@ class User extends Authenticatable
         'locked_until',
         'email_verified_at',
         'phone_verified_at',
+        'User_id',
     ];
 
     /**
@@ -243,4 +244,44 @@ class User extends Authenticatable
         return $this->hasOne(Shareholder::class);
     }
 
+    public function permissionUsers()
+    {
+        return $this->hasMany(PermissionUser::class, 'User_id');
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_users', 'User_id', 'permission_id')
+            ->withPivot(['id', 'Creater_id', 'Status', 'duration', 'start_date', 'end_date'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all ACTIVE permission slugs for this user (cached per request)
+     */
+    public function activePermissionSlugs(): array
+    {
+        static $cache = [];
+
+        $userId = $this->id;
+
+        if (!isset($cache[$userId])) {
+            $cache[$userId] = $this->permissionUsers()
+                ->where('Status', 'Active')
+                ->with('permission')
+                ->get()
+                ->filter(fn($pu) => $pu->isActive())        // handles Temporary date check
+                ->map(fn($pu) => $pu->permission?->slug)
+                ->filter()
+                ->values()
+                ->toArray();
+        }
+
+        return $cache[$userId];
+    }
+
+    public function hasPermissionSlug(string $slug): bool
+    {
+        return in_array($slug, $this->activePermissionSlugs());
+    }
 }

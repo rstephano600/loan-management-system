@@ -9,10 +9,34 @@ Route::get('/', function () {
 
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\PermissionUserController;
+use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Employee\EmployeeManagementController;
+use App\Http\Controllers\Group\GroupMemberController;
+
+
+// NEW IMPROVED CODES
+// Permission User Controller
+Route::get('/usersRole', [PermissionUserController::class, 'usersRole'])->name('usersRole');
+Route::get('/assignRole/{id}', [PermissionUserController::class, 'assignRole'])->name('assignRole');
+Route::post('/permissionsstore', [PermissionUserController::class, 'permissionsstore'])->name('permissionsstore');
 
 Route::get('/login', [AuthenticationController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthenticationController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
+Route::get('/home', [AuthenticationController::class, 'home'])->name('home');
+Route::post('/settings', [AuthenticationController::class, 'settings'])->name('settings');
+Route::post('/delete-active-session', [AuthenticationController::class, 'deleteActvSession'])->name('delete-active-session');
+// Session activity ping — must be inside auth middleware group
+Route::middleware('auth')->post('/session/ping', function () {
+    session(['last_activity_time' => time()]);
+    return response()->json(['status' => 'ok']);
+});
+Route::get('/configurationside', [DashboardController::class, 'configurationside'])->name('configurationside');
+Route::get('/workingside', [DashboardController::class, 'workingside'])->name('workingside');
+Route::get('/reportingside', [DashboardController::class, 'reportingside'])->name('reportingside');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -21,7 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
-use App\Http\Controllers\User\UserController;
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('users', UserController::class);
@@ -30,7 +53,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 });
 
-use App\Http\Controllers\Dashboard\DashboardController;
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -48,8 +71,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/client/dashboard', fn() => view('dashboards.client'))->name('client.dashboard');
     Route::get('/user/dashboard', fn() => view('dashboards.user'))->name('user.dashboard');
 });
-
-use App\Http\Controllers\Employee\EmployeeManagementController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -71,7 +92,7 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('groups', GroupController::class);
 
 });
-use App\Http\Controllers\Group\GroupMemberController;
+
 Route::middleware(['auth'])->group(function () {
 Route::get('/groups/{group}/members/create', [GroupMemberController::class, 'create'])->name('group_members.create');
 Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])->name('group_members.store');
@@ -301,3 +322,4 @@ Route::middleware(['auth'])->prefix('api')->group(function () {
 // use App\Http\Controllers\Loan\PaymentController;
 // Route::get('loans/{loan}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
 // Route::post('loans/{loan}/payments', [PaymentController::class, 'store'])->name('payments.store');
+
