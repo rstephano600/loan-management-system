@@ -1,6 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.configside')
+@section('title', 'System Users Informations')
+@section('page-title', 'System Users Informations')
 
 @section('content')
+<div class="arbif-page-header">
+    <h3><div class="page-icon"><i class="fas fa-globe"></i></div>System Users Informations</h3>
+    <button class="arbif-btn-submit" onclick="openCreateForm()"><i class="fas fa-plus"></i> Add Users Informations</button>
+</div>
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold">Manage Users</h4>

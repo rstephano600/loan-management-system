@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SessionTimeout
 {
-    protected int $timeoutSeconds = 600;
+    protected int $timeoutSeconds = 6000;
 
     public function handle(Request $request, Closure $next)
     {

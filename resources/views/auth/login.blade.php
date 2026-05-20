@@ -49,7 +49,7 @@
             Secure loan management system for modern financial operations
         </p>
 
-        <ul style="list-style:none;margin-top:32px;width:100%;padding:0;max-width:220px;">
+        <ul style="list-style:none;margin-top:32px;width:100%;padding:0;max-width:220px;display:none;">
             @foreach(['Role-based access control','Session timeout protection','Encrypted audit trails','Multi-branch reporting'] as $f)
             <li style="display:flex;align-items:center;gap:10px;
                         color:rgba(255,255,255,0.65);font-size:12px;padding:6px 0;">

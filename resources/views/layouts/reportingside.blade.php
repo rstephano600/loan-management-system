@@ -372,7 +372,9 @@
 
 <style>
     .reportingside{
-        color: #0d6efd;
-        border-bottom: 2px solid #0d6efd;   
+        background: rgba(12,68,124,0.08);
+        color: var(--navy);
+        border-color: rgba(12,68,124,0.15);
+        font-weight: 600;
     }
 </style>

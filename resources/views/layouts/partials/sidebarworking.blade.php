@@ -42,22 +42,26 @@
     </div>
 
     <nav class="nav flex-column p-3">
-        @can('view-reporting-side')
-        <a href="{{ route('reportingside') }}" class="nav-link-custom reportingside {{ Request::is('reportingside*') ? 'active' : '' }}">
-            <i class="bi bi-graph-up-arrow me-1"></i> Reports
-        </a>              
-        @endcan
-        <hr class="dropdown-divider my-2 border-white border-opacity-25">
-            <a href="{{ route('daily_collections.index') }}" class="nav-link {{ Request::is('daily_collections*') ? 'active' : '' }}">
-                <i class="bi bi-wallet2"></i>
-                <span>Daily Collections</span>
-            </a>
-        <hr class="dropdown-divider my-2 border-white border-opacity-25">
-        
-        <a href="{{ route('profile.show') }}" class="nav-link {{ Request::is('profile*') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i>
-            <span>My Profile</span>
-        </a>
+    @can('view-working-side')
+    <a href="{{ route('workingside') }}" 
+       class="nav-link {{ Request::is('workingside*') ? 'active' : '' }}">
+        <i class="fas fa-tasks me-1"></i> 
+        <span>Working Side</span>
+    </a>
+    @endcan
+    @can('view-employee-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Employee Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu">
+            <div class="ps-4 mt-2">
+                @can('register-employees')
+                <a href="{{ route('employeeinfo') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Company Employees</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
 
         <form method="POST" action="{{ route('logout') }}" class="mt-auto">
             @csrf

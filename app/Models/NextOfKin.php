@@ -20,6 +20,7 @@ class NextOfKin extends Model
         'phone',
         'address',
         'other_informations',
+        'relationship',
     ];
 
     // Relationship
@@ -28,9 +29,5 @@ class NextOfKin extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function getFullNameAttribute()
-    {
-        return trim("{$this->first_name} {$this->last_name}");
-    }
 
 }

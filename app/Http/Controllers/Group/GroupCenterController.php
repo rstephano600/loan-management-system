@@ -12,9 +12,7 @@ use App\Helpers\LogActivity;
 
 class GroupCenterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
 public function index(Request $request)
 {
     // Search and filter inputs
@@ -168,3 +166,140 @@ public function show(GroupCenter $groupCenter)
         return redirect()->route('group_centers.index')->with('success', 'Group Center deleted successfully!');
     }
 }
+
+
+
+
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        $search = $request->input('search');
+
+        $groups = Group::query()
+            ->when($search, function ($query, $search) {
+                $query->where('group_name', 'like', "%{$search}%")
+                      ->orWhere('group_code', 'like', "%{$search}%")
+                      ->orWhere('location', 'like', "%{$search}%");
+            })
+            // Restrict Loan Officer's view
+            ->when($user->hasRole('loanofficer'), function ($query) use ($user) {
+                // Assuming `Employee` is linked to `User` via user_id
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $query->where('credit_officer_id', $employee->id);
+                }
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        return view('in.groups.index', compact('groups', 'search'));
+    }
+
+
+    /**
+     * Show the form for creating a new group.
+     */
+
+    public function create(Request $request)
+    {
+    $groupCenters = GroupCenter::where('is_active', 1)->get();
+    $creditOfficers = Employee::where('is_active', true)->get();
+
+    $selectedCenterId = $request->get('center_id'); // capture if passed from center show page
+    $selectedCreditOfficerId = $request->get('credit_officer_id'); // capture if passed from center show page
+
+    return view('in.groups.create', compact('creditOfficers', 'groupCenters', 'selectedCenterId', 'selectedCreditOfficerId'));
+   }
+
+
+    /**
+     * Store a newly created group.
+     */
+    public function store(Request $request)
+    {
+    $validated = $request->validate([
+        'group_center_id' => 'required|exists:group_centers,id',
+        'group_name' => 'required|string|max:255',
+        'group_type' => 'nullable|string|max:255',
+        'location' => 'nullable|string|max:255',
+        'description' => 'nullable|string',
+        'credit_officer_id' => 'nullable|exists:employees,id',
+        'registration_date' => 'nullable|date',
+    ]);
+
+    // Auto-generate unique group code based on name and date
+    $namePart = strtoupper(substr(preg_replace('/\s+/', '', $request->group_name), 0, 3)); // first 3 letters (no spaces)
+    $datePart = now()->format('Ymd'); // current date (e.g. 20251006)
+    $randomPart = strtoupper(Str::random(3)); // random 3 letters
+
+    $groupCode = "{$namePart}-{$datePart}-{$randomPart}";
+
+    // Ensure code is unique (retry if not)
+    while (\App\Models\Group::where('group_code', $groupCode)->exists()) {
+        $randomPart = strtoupper(Str::random(3));
+        $groupCode = "{$namePart}-{$datePart}-{$randomPart}";
+    }
+
+    $validated['group_code'] = $groupCode;
+    $validated['created_by'] = auth()->id() ?? 1;
+
+    Group::create($validated);
+
+    return back()->with('success', 'Group ' . $validated['group_name'] . ' created successfully!');
+    }
+
+
+    /**
+     * Display the specified group.
+     */
+public function show(Group $group)
+{
+    // Eager load clients to avoid N+1 queries
+    $group->load('clients');
+
+    return view('in.groups.show', compact('group'));
+}
+
+    /**
+     * Show the form for editing the specified group.
+     */
+    public function edit(Group $group)
+    {
+        $groupCenters = GroupCenter::where('is_active', 1)->get();
+        $creditOfficers = Employee::where('is_active', true)->get();
+        return view('in.groups.edit', compact('group', 'creditOfficers', 'groupCenters'));
+    }
+
+    /**
+     * Update the specified group.
+     */
+    public function update(Request $request, Group $group)
+    {
+        $validated = $request->validate([
+            'group_center_id' => 'required|exists:group_centers,id',
+            'group_name' => 'required|string|max:255',
+            'group_type' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'credit_officer_id' => 'nullable|exists:employees,id',
+            'registration_date' => 'nullable|date',
+            'is_active' => 'boolean',
+        ]);
+
+        $validated['updated_by'] = auth()->id() ?? 1;
+
+        $group->update($validated);
+
+        return redirect()->route('groups.index')->with('success', 'Group updated successfully!');
+    }
+
+    
+
+    /**
+     * Remove the specified group.
+     */
+    public function destroy(Group $group)
+    {
+        $group->delete();
+        return redirect()->route('groups.index')->with('success', 'Group deleted successfully!');
+    }

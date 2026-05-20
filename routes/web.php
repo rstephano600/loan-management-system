@@ -7,24 +7,46 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\PermissionUserController;
-use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\EmployeeController;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Employee\EmployeeManagementController;
 use App\Http\Controllers\Group\GroupMemberController;
+use App\Http\Controllers\AccountingController;
+use App\Http\Controllers\Group\GroupController;
+use App\Http\Controllers\Client\ClientController;
+use App\Http\Controllers\Loan\LoanReportController;
+use App\Http\Controllers\Loan\CollectionSummaryController;
+use App\Http\Controllers\Loan\CollectionSummaryController2;
+use App\Http\Controllers\Salary\EmployeeWeeklyAllowanceController;
+use App\Http\Controllers\Donation\DonationController;
+use App\Http\Controllers\Expense\ExpenseCategoryController;
+use App\Http\Controllers\Expense\ExpenseController;
+use App\Http\Controllers\Salary\SalaryLevelController;
+use App\Http\Controllers\Salary\EmployeeSalaryController;
+use App\Http\Controllers\Salary\EmployeeSalaryPaymentController;
+use App\Http\Controllers\Loan\RepaymentScheduleController;
+use App\Http\Controllers\Loan\LoanApprovalController;
+use App\Http\Controllers\Loan\LoanRequestNewClientController;
+use App\Http\Controllers\Loan\LoanRequestContinuengClientController;
+use App\Http\Controllers\Loan\LoanOfficerLoansController;
+use App\Http\Controllers\Employee\EmployeeExportController;
+use App\Http\Controllers\Group\GroupCenterController;
+use App\Http\Controllers\Loan\LoanCategoryController;
+use App\Http\Controllers\Loan\LoanPaymentController;
+use App\Http\Controllers\Loan\LoanController;
+use App\Http\Controllers\Loan\LoanDashboardController;
+use App\Http\Controllers\Loan\ClientLoanController;
+use App\Http\Controllers\Loan\DailyCollectionController;
 
-
-// NEW IMPROVED CODES
-// Permission User Controller
-Route::get('/usersRole', [PermissionUserController::class, 'usersRole'])->name('usersRole');
-Route::get('/assignRole/{id}', [PermissionUserController::class, 'assignRole'])->name('assignRole');
-Route::post('/permissionsstore', [PermissionUserController::class, 'permissionsstore'])->name('permissionsstore');
 
 Route::get('/login', [AuthenticationController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthenticationController::class, 'login'])->name('login.submit');
-Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
+
 Route::get('/home', [AuthenticationController::class, 'home'])->name('home');
 Route::post('/settings', [AuthenticationController::class, 'settings'])->name('settings');
 Route::post('/delete-active-session', [AuthenticationController::class, 'deleteActvSession'])->name('delete-active-session');
@@ -33,16 +55,72 @@ Route::middleware('auth')->post('/session/ping', function () {
     session(['last_activity_time' => time()]);
     return response()->json(['status' => 'ok']);
 });
-Route::get('/configurationside', [DashboardController::class, 'configurationside'])->name('configurationside');
-Route::get('/workingside', [DashboardController::class, 'workingside'])->name('workingside');
-Route::get('/reportingside', [DashboardController::class, 'reportingside'])->name('reportingside');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
+
+    // NEW IMPROVED CODES
+    Route::get('/systemUsers', [UserController::class, 'systemUsers'])->name('systemUsers');
+    Route::post('/storesystemUsers', [UserController::class, 'storesystemUsers'])->name('storesystemUsers');
+    Route::get('/editsystemUsers/{id}', [UserController::class, 'editsystemUsers'])->name('editsystemUsers');
+    Route::put('/updatesystemUsers/{id}', [UserController::class, 'updatesystemUsers'])->name('updatesystemUsers');
+    Route::get('/destroysystemUsers/{id}', [UserController::class, 'destroysystemUsers'])->name('destroysystemUsers');
+    Route::put('/resetPassword/{user}/', [UserController::class, 'resetPassword'])->name('resetPassword');
+
+    // Permission User Controller
+    Route::get('/usersRole', [PermissionUserController::class, 'usersRole'])->name('usersRole');
+    Route::get('/assignRole/{id}', [PermissionUserController::class, 'assignRole'])->name('assignRole');
+    Route::post('/permissionsstore', [PermissionUserController::class, 'permissionsstore'])->name('permissionsstore');
+    Route::post('/permissionsremove', [PermissionUserController::class, 'permissionsremove'])->name('permissionsremove');
+
+    Route::get('/configurationside', [DashboardController::class, 'configurationside'])->name('configurationside');
+    Route::get('/workingside', [DashboardController::class, 'workingside'])->name('workingside');
+    Route::get('/reportingside', [DashboardController::class, 'reportingside'])->name('reportingside');
+
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.password.edit');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    Route::get('/accountCountry', [AccountingController::class, 'accountCountry'])->name('accountCountry');
+    Route::post('/storeaccountCountry', [AccountingController::class, 'storeaccountCountry'])->name('storeaccountCountry');
+    Route::get('/editaccountCountry/{id}', [AccountingController::class, 'editaccountCountry'])->name('editaccountCountry');
+    Route::put('/updateaccountCountry/{id}', [AccountingController::class, 'updateaccountCountry'])->name('updateaccountCountry'); // Changed to PUT
+    Route::get('/destroyaccountCountry/{id}', [AccountingController::class, 'destroyaccountCountry'])->name('destroyaccountCountry'); // Changed to DELETE
+    Route::get('/editaccountCountry/{id}', [AccountingController::class, 'editaccountCountry'])->name('editaccountCountry'); // NEW: For fetching edit data
+    // Add these routes to web.php
+
+    Route::get('/accountBusiness', [AccountingController::class, 'accountBusiness'])->name('accountBusiness');
+    Route::post('/storeaccountBusiness', [AccountingController::class, 'storeaccountBusiness'])->name('storeaccountBusiness');
+    Route::get('/editaccountBusiness/{id}', [AccountingController::class, 'editaccountBusiness'])->name('editaccountBusiness');
+    Route::put('/updateaccountBusiness/{id}', [AccountingController::class, 'updateaccountBusiness'])->name('updateaccountBusiness');
+    Route::get('/destroyaccountBusiness/{id}', [AccountingController::class, 'destroyaccountBusiness'])->name('destroyaccountBusiness');
+
+    Route::get('/accountRoot', [AccountingController::class, 'accountRoot'])->name('accountRoot');
+    Route::post('/storeaccountRoot', [AccountingController::class, 'storeaccountRoot'])->name('storeaccountRoot');
+    Route::get('/editaccountRoot/{id}', [AccountingController::class, 'editaccountRoot'])->name('editaccountRoot');
+    Route::put('/updateaccountRoot/{id}', [AccountingController::class, 'updateaccountRoot'])->name('updateaccountRoot');
+    Route::get('/destroyaccountRoot/{id}', [AccountingController::class, 'destroyaccountRoot'])->name('destroyaccountRoot');
+
+    Route::get('/accountFirstBranch', [AccountingController::class, 'accountFirstBranch'])->name('accountFirstBranch');
+    Route::post('/storeaccountFirstBranch', [AccountingController::class, 'storeaccountFirstBranch'])->name('storeaccountFirstBranch');
+    Route::get('/editaccountFirstBranch/{id}', [AccountingController::class, 'editaccountFirstBranch'])->name('editaccountFirstBranch');
+    Route::put('/updateaccountFirstBranch/{id}', [AccountingController::class, 'updateaccountFirstBranch'])->name('updateaccountFirstBranch');
+    Route::get('/destroyaccountFirstBranch/{id}', [AccountingController::class, 'destroyaccountFirstBranch'])->name('destroyaccountFirstBranch');
+
+    Route::get('/accountSecondBranch', [AccountingController::class, 'accountSecondBranch'])->name('accountSecondBranch');
+    Route::post('/storeaccountSecondBranch', [AccountingController::class, 'storeaccountSecondBranch'])->name('storeaccountSecondBranch');
+    Route::get('/editaccountSecondBranch/{id}', [AccountingController::class, 'editaccountSecondBranch'])->name('editaccountSecondBranch');
+    Route::put('/updateaccountSecondBranch/{id}', [AccountingController::class, 'updateaccountSecondBranch'])->name('updateaccountSecondBranch');
+    Route::get('/destroyaccountSecondBranch/{id}', [AccountingController::class, 'destroyaccountSecondBranch'])->name('destroyaccountSecondBranch');
+
+    Route::get('/employeeinfo', [EmployeeController::class, 'employeeinfo'])->name('employeeinfo');
+    Route::post('/storenewemployeeinfo', [EmployeeController::class, 'storenewemployeeinfo'])->name('storenewemployeeinfo');
+    Route::get('/editemployeeinfo/{id}', [EmployeeController::class, 'editemployeeinfo'])->name('editemployeeinfo');
+    Route::put('/updateemployeeinfo/{id}', [EmployeeController::class, 'updateemployeeinfo'])->name('updateemployeeinfo');
+    Route::get('/destroyemployeeinfo/{id}', [EmployeeController::class, 'destroyemployeeinfo'])->name('destroyemployeeinfo');
+
 });
 
 
@@ -87,7 +165,7 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-use App\Http\Controllers\Group\GroupController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('groups', GroupController::class);
 
@@ -99,21 +177,18 @@ Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])-
 Route::delete('/group_members/{member}', [GroupMemberController::class, 'destroy'])->name('group_members.destroy');
 });
 
-use App\Http\Controllers\Client\ClientController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('clients', ClientController::class);
 Route::get('/clients/{client}/export', [ClientController::class, 'export'])->name('clients.export');
 Route::resource('guarantors', App\Http\Controllers\Client\ClientGuarantorController::class);
 });
 
-use App\Http\Controllers\Group\GroupCenterController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('group_centers', GroupCenterController::class);
 });
 
-use App\Http\Controllers\Loan\LoanCategoryController;
-use App\Http\Controllers\Loan\LoanPaymentController;
-use App\Http\Controllers\Loan\LoanController;
 Route::middleware(['auth'])->group(function () {
 Route::resource('loan_categories', LoanCategoryController::class);
 Route::patch('loan_categories/{loanCategory}/toggle', [LoanCategoryController::class, 'toggleStatus'])
@@ -126,7 +201,7 @@ Route::post('/loans/{id}/refunding/set', [LoanController::class, 'setRefund'])->
 Route::resource('loan_payments', LoanPaymentController::class);
 });
 
-use App\Http\Controllers\Employee\EmployeeExportController;
+
 Route::middleware(['auth'])->group(function () {
     // Employee Export Routes
     Route::get('employees/export', [EmployeeExportController::class, 'exportOptions'])
@@ -141,9 +216,7 @@ Route::middleware(['auth'])->group(function () {
 
 // NEW CLIENT REQUST CONTROLLER
 
-use App\Http\Controllers\Loan\LoanRequestNewClientController;
-use App\Http\Controllers\Loan\LoanRequestContinuengClientController;
-use App\Http\Controllers\Loan\LoanOfficerLoansController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('loan_request_continueng_client', LoanRequestContinuengClientController::class)
     ->parameters(['loan_request_continueng_client' => 'loan']);;
@@ -156,7 +229,6 @@ Route::resource('loan-pfficers-loans', LoanOfficerLoansController::class)
 });
 
 
-use App\Http\Controllers\Loan\LoanApprovalController;
 
 Route::prefix('loan-approvals')->middleware(['auth'])->group(function () {
     Route::get('loan-approvals/', [LoanApprovalController::class, 'index'])->name('loan-approvals.index');
@@ -165,7 +237,7 @@ Route::prefix('loan-approvals')->middleware(['auth'])->group(function () {
     Route::post('loan-approvals/{id}/reject', [LoanApprovalController::class, 'reject'])->name('loan-approvals.reject');
 });
 
-use App\Http\Controllers\Loan\RepaymentScheduleController;
+
 Route::middleware(['auth'])->group(function () {
 Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
 Route::post('/repayments/pay/{id}', [RepaymentScheduleController::class, 'pay'])->name('repayments.pay');
@@ -173,12 +245,7 @@ Route::post('/schedules/{id}/penalty', [RepaymentScheduleController::class, 'add
 });
 // Route::get('/repayments/{loan}', [RepaymentScheduleController::class, 'show'])->name('repayment_schedules.show');
 
-use App\Http\Controllers\Donation\DonationController;
-use App\Http\Controllers\Expense\ExpenseCategoryController;
-use App\Http\Controllers\Expense\ExpenseController;
-use App\Http\Controllers\Salary\SalaryLevelController;
-use App\Http\Controllers\Salary\EmployeeSalaryController;
-use App\Http\Controllers\Salary\EmployeeSalaryPaymentController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('donations', DonationController::class);
 
@@ -214,7 +281,7 @@ Route::middleware(['auth'])->prefix('employee-payments')->name('employee_payment
     Route::delete('/{id}', [EmployeeSalaryPaymentController::class, 'destroy'])->name('destroy');
 });
 
-use App\Http\Controllers\Salary\EmployeeWeeklyAllowanceController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('employee_weekly_allowances', EmployeeWeeklyAllowanceController::class);
 
@@ -224,13 +291,13 @@ Route::get('/search/employees', [EmployeeWeeklyAllowanceController::class, 'sear
 
 
 
-use App\Http\Controllers\Loan\ClientLoanController;
+
 Route::middleware(['auth'])->group(function () {
 Route::resource('client_loans', ClientLoanController::class);
 Route::post('client_loans/{clientLoan}/close', [ClientLoanController::class, 'closeLoan'])->name('client_loans.close');
 });
 
-use App\Http\Controllers\Loan\DailyCollectionController;
+
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('daily_collections', DailyCollectionController::class);
@@ -241,7 +308,7 @@ Route::resource('client-loan-photos', App\Http\Controllers\Loan\ClientLoanPhotoC
 });
 // Add these routes to your web.php file
 
-use App\Http\Controllers\Loan\LoanDashboardController;
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/loansAnalysis/dashboard', [LoanDashboardController::class, 'index'])->name('loans_dashboard.dashboard');
@@ -252,9 +319,6 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-use App\Http\Controllers\Loan\LoanReportController;
-use App\Http\Controllers\Loan\CollectionSummaryController;
-use App\Http\Controllers\Loan\CollectionSummaryController2;
 
 
 Route::middleware('auth')->group(function () {

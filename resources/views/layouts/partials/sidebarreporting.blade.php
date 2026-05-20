@@ -47,17 +47,7 @@
             <i class="bi bi-graph-up-arrow me-1"></i> Reports
         </a>              
         @endcan
-                    <hr class="dropdown-divider my-2 border-white border-opacity-25">
-            <a href="{{ route('daily_collections.index') }}" class="nav-link {{ Request::is('daily_collections*') ? 'active' : '' }}">
-                <i class="bi bi-wallet2"></i>
-                <span>Daily Collections</span>
-            </a>
-        <hr class="dropdown-divider my-2 border-white border-opacity-25">
-        
-        <a href="{{ route('profile.show') }}" class="nav-link {{ Request::is('profile*') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i>
-            <span>My Profile</span>
-        </a>
+
 
         <form method="POST" action="{{ route('logout') }}" class="mt-auto">
             @csrf

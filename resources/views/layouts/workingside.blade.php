@@ -5,20 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArBif Management System</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Favicon --}}
     <link rel="icon" href="{{ asset('images/arbifA.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('images/arbifA.png') }}">
+    
+    
+    {{-- LOCAL BOOTSTRAP 5.3.8 CSS --}}
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/all.min.css') }}" rel="stylesheet">
+        {{-- LOCAL BOOTSTRAP ICONS (Now from your local NPM install) --}}
+    <link href="{{ asset('assets/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    {{-- LOCAL FONT AWESOME (If you installed it) --}}
+    <link href="{{ asset('assets/fontawesome/css/all.min.css') }}" rel="stylesheet">
+    {{-- Select2 CSS --}}
     <link href="{{ asset('assets/css/select2.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- jQuery (if not included yet) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
+    {{-- Custom CSS Files (order matters) --}}
+    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet">
+
+    {{-- LOCAL SELECT2 CSS (Downloaded) --}}
+    <link href="{{ asset('assets/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/select2/css/select2-bootstrap-5-theme.min.css') }}" rel="stylesheet">
     <style>
         :root {
             /* Blue for primary/branding */
@@ -79,7 +85,7 @@
         
         .sidebar .nav-link.active {
             /* Active link uses the accent green for distinction */
-            background-color: var(--primary-green);
+            /* background-color: var(--primary-green); */
             color: var(--background-white);
             font-weight: 600;
         }
@@ -265,13 +271,35 @@
             background-color: var(--dark-blue);
             border-color: var(--dark-blue);
         }
-
+    /* Select2 Custom Styling */
+        .select2-container--bootstrap-5 .select2-selection {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            min-height: 38px;
+        }
+        
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            .sidebar, .main-header, .btn, .no-print {
+                display: none !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
     </style>
     
     @stack('styles')
 </head>
+
+
 <body>
-    @include('layouts.partials.sidebar')
+    @include('layouts.partials.sidebarworking')
     <div class="main-content" id="mainContent">
         @include('layouts.partials.header')
 
@@ -288,10 +316,19 @@
         @include('layouts.partials.footer')
     </div>
 
-    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/select2.min.js') }}"></script>
-
+     {{-- jQuery (Required for Select2) --}}
+    <script src="{{ asset('assets/jquery/jquery.min.js') }}"></script>
     
+    {{-- LOCAL BOOTSTRAP JS BUNDLE --}}
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    
+    {{-- LOCAL SELECT2 JS --}}
+    <script src="{{ asset('assets/select2/js/select2.min.js') }}"></script>
+    
+    {{-- Custom Global JS --}}
+    <script src="{{ asset('assets/js/custom.js') }}"></script>
+    <script src="{{ asset('js/sweetalert-ajax.js') }}"></script>
     <script>
         // Toggle Sidebar
         document.getElementById('sidebarToggle').addEventListener('click', function() {
@@ -365,6 +402,66 @@
                 }, 5000);
             });
         });
+
+        // Global Variables
+        window.csrfToken = '{{ csrf_token() }}';
+        window.appUrl = '{{ url("/") }}';
+        window.userId = '{{ Auth::id() ?? null }}';
+        
+        $(document).ready(function() {
+            // Initialize all Select2 elements with search
+            $('.select2-search, select[name*="country"], select[name*="Country_id"]').each(function() {
+                $(this).select2({
+                    placeholder: $(this).data('placeholder') || 'Search...',
+                    allowClear: true,
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    language: {
+                        noResults: function() {
+                            return 'No results found';
+                        },
+                        searching: function() {
+                            return 'Searching...';
+                        }
+                    }
+                });
+            });
+            
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Initialize popovers
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function(popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl);
+            });
+            
+            // Auto-hide flash messages
+            setTimeout(function() {
+                $('#flash-message-container .alert').fadeOut('slow', function() {
+                    $(this).alert('close');
+                });
+            }, 5000);
+        });
+                // Show Loading
+        window.showLoading = function() {
+            $('#loadingOverlay').fadeIn(300);
+        };
+        
+        // Hide Loading
+        window.hideLoading = function() {
+            $('#loadingOverlay').fadeOut(300);
+        };
+        
+        // Global AJAX Setup
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
     </script>
     
     @stack('scripts')
@@ -372,5 +469,10 @@
 </html>
 
 <style>
-    .workingside { color: #0d6efd; border-bottom: 2px solid #0d6efd; }
+    .workingside { 
+        background: rgba(12,68,124,0.08);
+        color: var(--navy);
+        border-color: rgba(12,68,124,0.15);
+        font-weight: 600;
+     }
 </style>

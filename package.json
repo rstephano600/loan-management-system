@@ -1,10 +1,19 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
+    "name": "arbif-loans",
+    "version": "1.0.0",
+    "description": "ArBif Loan Management System",
+    "author": "ArBif",
+    "license": "MIT",
     "private": true,
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "copy-bootstrap-icons": "xcopy node_modules\\bootstrap-icons public\\assets\\bootstrap-icons\\ /E /I /Y",
+        "copy-fontawesome": "xcopy node_modules\\@fortawesome\\fontawesome-free public\\assets\\fontawesome\\ /E /I /Y",
+        "copy-all": "npm run copy-bootstrap-icons && npm run copy-fontawesome",
+        "postinstall": "npm run copy-all"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -13,5 +22,10 @@
         "laravel-vite-plugin": "^2.0.0",
         "tailwindcss": "^4.0.0",
         "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "^6.5.2",
+        "bootstrap-icons": "^1.13.1",
+        "sweetalert2": "^11.26.24"
     }
 }

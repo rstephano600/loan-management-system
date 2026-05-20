@@ -23,3 +23,13 @@
         </div>
     </div>
 </footer>
+
+@push('scripts')
+<script>
+function openCreateForm() {
+    document.getElementById('dataFormFill').reset();
+    const modal = new bootstrap.Modal(document.getElementById('addFormModal'));
+    modal.show();
+}
+</script>
+@endpush

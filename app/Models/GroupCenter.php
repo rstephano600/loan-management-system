@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class GroupCenter extends Model
 {
     use HasFactory;
+    protected $table = 'group_centers';
 
     protected $fillable = [
         'center_code',

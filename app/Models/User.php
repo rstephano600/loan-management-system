@@ -50,17 +50,16 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * ===========================================
-     * MASS ASSIGNABLE FIELDS
-     * ===========================================
-     */
     protected $fillable = [
         'username',
+        'name',
+        'FirstName',
+        'MiddleName',
+        'LastName',
         'email',
         'phone',
         'password',
-        'role',
+        'Role',
         'Status',
         'created_by',
         'updated_by',
@@ -70,6 +69,8 @@ class User extends Authenticatable
         'email_verified_at',
         'phone_verified_at',
         'User_id',
+        'Dob',
+        'gender',
     ];
 
     /**
@@ -91,19 +92,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * Default values
-     */
-    protected $attributes = [
-        'status' => 'active',
-        'role' => self::ROLE_USER,
-    ];
 
-    /**
-     * ===========================================
-     * RELATIONSHIPS
-     * ===========================================
-     */
     public function employee()
     {
         return $this->hasOne(Employee::class);
@@ -114,51 +103,7 @@ class User extends Authenticatable
         return $this->hasOne(Client::class);
     }
 
-    /**
-     * ===========================================
-     * SCOPES
-     * ===========================================
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
 
-    public function scopeRole($query, $role)
-    {
-        return $query->whereIn('role', (array) $role);
-    }
-
-     protected static function booted()
-    {
-        static::creating(function ($user) {
-            $user->generateName();
-        });
-
-        static::updating(function ($user) {
-            $user->generateName();
-        });
-
-    }
-
-    public function generateName()
-    {
-        // Check if user is linked to an employee
-        if ($this->employee) {
-            $this->name = trim("{$this->employee->last_name}, {$this->employee->first_name} {$this->employee->middle_name}");
-        }
-
-        // Or if linked to a client
-        elseif ($this->client) {
-            $this->name = trim("{$this->client->last_name}, {$this->client->first_name} {$this->client->middle_name}");
-        }
-    }
-
-    /**
-     * ===========================================
-     * ROLE CHECK HELPERS
-     * ===========================================
-     */
     public function hasRole($role): bool
     {
         return in_array($this->role, (array) $role);

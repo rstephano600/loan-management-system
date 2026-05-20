@@ -8,14 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Employee extends Model
 {
     use HasFactory;
+    protected $table = 'employees';
 
     protected $fillable = [
-        'employee_id',
+        'Employee_id',
         'user_id',
-        'first_name',
-        'middle_name',
-        'last_name',
-        'gender',
         'date_of_birth',
         'marital_status',
         'nida',
@@ -32,6 +29,7 @@ class Employee extends Model
         'other_information',
         'created_by',
         'updated_by',
+        'basic_salary',
     ];
 
     protected $casts = [
