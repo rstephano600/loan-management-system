@@ -14,6 +14,8 @@ class Client extends Model
 
     protected $fillable = [
         'group_center_id',
+        'client_id',
+        'client_code',
         'group_id',
         'client_type',
         'business_name',
@@ -27,11 +29,6 @@ class Client extends Model
         'years_in_business',
         'months_in_business',
         'number_of_employees',
-        'first_name',
-        'last_name',
-        'middle_name',
-        'email',
-        'phone',
         'alternative_phone',
         'address_line1',
         'address_line2',
@@ -67,34 +64,29 @@ class Client extends Model
     ];
 
     // Relationships
-    public function loanOfficer()
+    public function client()
     {
-        return $this->belongsTo(User::class, 'credit_officer_id');
+        return $this->belongsTo(User::class, 'client_id');
     }
-    public function dropColumn()
+    public function loanOfficer()
     {
         return $this->belongsTo(Employee::class, 'credit_officer_id');
     }
     // app/Models/Client.php
-public function group()
-{
-    return $this->belongsTo(Group::class, 'group_id');
-}
-
-public function groupCenter()
-{
-    return $this->belongsTo(GroupCenter::class, 'group_center_id');
-}
-
-// app/Models/Client.php
-public function assignedLoanOfficer()
-{
-    return $this->belongsTo(Employee::class, 'credit_officer_id');
-}
-
-    public function client()
+    public function group()
     {
         return $this->belongsTo(Group::class, 'group_id');
+    }
+
+    public function groupCenter()
+    {
+        return $this->belongsTo(GroupCenter::class, 'group_center_id');
+    }
+
+    // app/Models/Client.php
+    public function assignedLoanOfficer()
+    {
+        return $this->belongsTo(Employee::class, 'credit_officer_id');
     }
 
     public function documents()
@@ -107,19 +99,25 @@ public function assignedLoanOfficer()
         return $this->hasMany(ClientFinancialInfo::class, 'client_id');
     }
     public function guarantor()
-{
-    return $this->hasOne(ClientGuarantor::class, 'client_id');
-}
-public function loanPhotos()
-{
-    return $this->hasMany(ClientLoanPhoto::class);
-}
+    {
+        return $this->hasOne(ClientGuarantor::class, 'client_id');
+    }
+    public function loanPhotos()
+    {
+        return $this->hasMany(ClientLoanPhoto::class);
+    }
 
-public function loans()
-{
-    return $this->hasMany(Loan::class, 'client_id');
-}
+    public function loans()
+    {
+        return $this->hasMany(Loan::class, 'client_id');
+    }
 
-
+    public function penalties()
+    {
+        return $this->hasMany(
+            LoanPenalty::class,
+            'client_id'
+        );
+    }
 
 }

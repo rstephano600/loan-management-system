@@ -21,6 +21,11 @@ class GroupCenter extends Model
         'is_active',
         'created_by',
         'updated_by',
+        
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     protected $casts = [

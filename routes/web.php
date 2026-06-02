@@ -17,7 +17,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Employee\EmployeeManagementController;
 use App\Http\Controllers\Group\GroupMemberController;
 use App\Http\Controllers\AccountingController;
-use App\Http\Controllers\Group\GroupController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Loan\LoanReportController;
 use App\Http\Controllers\Loan\CollectionSummaryController;
@@ -38,7 +38,7 @@ use App\Http\Controllers\Employee\EmployeeExportController;
 use App\Http\Controllers\Group\GroupCenterController;
 use App\Http\Controllers\Loan\LoanCategoryController;
 use App\Http\Controllers\Loan\LoanPaymentController;
-use App\Http\Controllers\Loan\LoanController;
+use App\Http\Controllers\LoanController;
 use App\Http\Controllers\Loan\LoanDashboardController;
 use App\Http\Controllers\Loan\ClientLoanController;
 use App\Http\Controllers\Loan\DailyCollectionController;
@@ -121,6 +121,112 @@ Route::middleware('auth')->group(function () {
     Route::put('/updateemployeeinfo/{id}', [EmployeeController::class, 'updateemployeeinfo'])->name('updateemployeeinfo');
     Route::get('/destroyemployeeinfo/{id}', [EmployeeController::class, 'destroyemployeeinfo'])->name('destroyemployeeinfo');
 
+    Route::get('/groupCenter', [GroupController::class, 'groupCenter'])->name('groupCenter');
+    Route::post('/storegroupCenter', [GroupController::class, 'storegroupCenter'])->name('storegroupCenter');
+    Route::get('/editgroupCenter/{id}', [GroupController::class, 'editgroupCenter'])->name('editgroupCenter');
+    Route::put('/updategroupCenter/{id}', [GroupController::class, 'updategroupCenter'])->name('updategroupCenter');
+    Route::get('/destroygroupCenter/{id}', [GroupController::class, 'destroygroupCenter'])->name('destroygroupCenter');
+    Route::get('/innactivegroupCenter', [GroupController::class, 'innactivegroupCenter'])->name('innactivegroupCenter');
+    Route::get('/activategroupCenter/{id}', [GroupController::class, 'activategroupCenter'])->name('activategroupCenter');
+
+    Route::get('/centerGroups', [GroupController::class, 'centerGroups'])->name('centerGroups');
+    Route::post('/storecenterGroups', [GroupController::class, 'storecenterGroups'])->name('storecenterGroups');
+    Route::get('/editcenterGroups/{id}', [GroupController::class, 'editcenterGroups'])->name('editcenterGroups');
+    Route::put('/updatecenterGroups/{id}', [GroupController::class, 'updatecenterGroups'])->name('updatecenterGroups');
+    Route::get('/destroycenterGroups/{id}', [GroupController::class, 'destroycenterGroups'])->name('destroycenterGroups');
+    Route::get('/innactivecenterGroups', [GroupController::class, 'innactivecenterGroups'])->name('innactivecenterGroups');
+    Route::get('/activatecenterGroups/{id}', [GroupController::class, 'activatecenterGroups'])->name('activatecenterGroups');
+
+
+    Route::get('/clientinformations', [GroupController::class, 'clientinformations'])->name('clientinformations');
+    Route::post('/storeclientinformations', [GroupController::class, 'storeclientinformations'])->name('storeclientinformations');
+    Route::get('/editclientinformations/{id}', [GroupController::class, 'editclientinformations'])->name('editclientinformations');
+    Route::put('/updateclientinformations/{id}', [GroupController::class, 'updateclientinformations'])->name('updateclientinformations');
+    Route::get('/destroyclientinformations/{id}', [GroupController::class, 'destroyclientinformations'])->name('destroyclientinformations');
+    Route::get('/showclientinformations/{id}/show', [GroupController::class, 'showclientinformations'])->name('showclientinformations');
+
+    Route::get('/groupMembers', [GroupController::class, 'groupMembers'])->name('groupMembers');
+    Route::post('/storegroupMembers', [GroupController::class, 'storegroupMembers'])->name('storegroupMembers');
+    Route::get('/editgroupMembers/{id}', [GroupController::class, 'editgroupMembers'])->name('editgroupMembers');
+    Route::get('/destroygroupMembers/{id}', [GroupController::class, 'destroygroupMembers'])->name('destroygroupMembers');
+    Route::get('/innactivegroupMembers', [GroupController::class, 'innactivegroupMembers'])->name('innactivegroupMembers');
+
+
+    Route::get('/loancategories', [LoanController::class, 'loancategories'])->name('loancategories');
+    Route::post('/storeloancategory', [LoanController::class, 'storeloancategory'])->name('storeloancategory');
+    Route::get('/editloancategory/{id}', [LoanController::class, 'editloancategory'])->name('editloancategory');
+    Route::post('/updateloancategory/{id}', [LoanController::class, 'updateloancategory'])->name('updateloancategory');
+    Route::get('/destroyloancategory/{id}', [LoanController::class, 'destroyloancategory'])->name('destroyloancategory');
+    Route::get('/viewloancategory/{id}', [LoanController::class, 'viewloancategory'])->name('viewloancategory');
+
+    Route::get('/loansinformations', [LoanController::class, 'loansinformations'])->name('loansinformations');
+    Route::get('/closedloansinformations', [LoanController::class, 'closedloansinformations'])->name('closedloansinformations');
+    Route::post('/registerloaninformation', [LoanController::class, 'registerloaninformation'])->name('registerloaninformation');
+    Route::get('/editloaninformation/{id}', [LoanController::class, 'editloaninformation'])->name('editloaninformation');
+    Route::post('/updateloaninformation/{id}', [LoanController::class, 'updateloaninformation'])->name('updateloaninformation');
+    Route::get('/viewloaninformation/{id}', [LoanController::class, 'viewloaninformation'])->name('viewloaninformation');
+    Route::get('/destroyloaninformation/{id}', [LoanController::class, 'destroyloaninformation'])->name('destroyloaninformation');
+
+    // LOAN REFUNDED
+    Route::get('/refundedloansinformations', [LoanController::class, 'refundedloansinformations'])->name('refundedloansinformations');
+    Route::get('/refundloansinfo/{id}', [LoanController::class, 'refundloansinfo'])->name('refundloansinfo');
+    Route::get('/unrefundloansinfo/{id}', [LoanController::class, 'unrefundloansinfo'])->name('unrefundloansinfo');
+
+    // LOAN APPROVAL
+    Route::get('/approveloansinformations', [LoanController::class, 'approveloansinformations'])->name('approveloansinformations');
+    Route::get('/rejectedloansinformations', [LoanController::class, 'rejectedloansinformations'])->name('rejectedloansinformations');
+    Route::get('/approveloansinfo/{id}', [LoanController::class, 'approveloansinfo'])->name('approveloansinfo');
+    Route::get('/rejectloansinfo/{id}', [LoanController::class, 'rejectloansinfo'])->name('rejectloansinfo');
+
+
+    Route::get('/loanpenaltycategories', [LoanController::class, 'loanpenaltycategories'])->name('loanpenaltycategories');
+    Route::post('/storeloanpenaltycategory', [LoanController::class, 'storeloanpenaltycategory'])->name('storeloanpenaltycategory');
+    Route::get('/editloanpenaltycategory/{id}', [LoanController::class, 'editloanpenaltycategory'])->name('editloanpenaltycategory');
+    Route::post('/updateloanpenaltycategory/{id}', [LoanController::class, 'updateloanpenaltycategory'])->name('updateloanpenaltycategory');
+    Route::get('/viewloanpenaltycategory/{id}', [LoanController::class, 'viewloanpenaltycategory'])->name('viewloanpenaltycategory');
+    Route::get('/destroyloanpenaltycategory/{id}', [LoanController::class, 'destroyloanpenaltycategory'])->name('destroyloanpenaltycategory');
+
+    // ROAN REPAYMENT
+    Route::get('/loansrepayments', [LoanController::class, 'loansrepayments'])->name('loansrepayments');
+    Route::post('/storeloanrepayment', [LoanController::class, 'storeloanrepayment'])->name('storeloanrepayment');
+    Route::get('/editloanrepayment/{id}', [LoanController::class, 'editloanrepayment'])->name('editloanrepayment');
+    Route::post('/updateloanrepayment/{id}', [LoanController::class, 'updateloanrepayment'])->name('updateloanrepayment');
+    Route::get('/viewloanrepayment/{id}', [LoanController::class, 'viewloanrepayment'])->name('viewloanrepayment');
+    Route::get('/destroyloanrepayment/{id}', [LoanController::class, 'destroyloanrepayment'])->name('destroyloanrepayment');
+    Route::get('/downloadloanrepaymenttemplate', [LoanController::class, 'downloadloanrepaymenttemplate'])->name('downloadloanrepaymenttemplate');
+    Route::post('/importloanrepayments', [LoanController::class, 'importloanrepayments'])->name('importloanrepayments');
+    // FEE REPAYMENTS
+    Route::get('/loansrepaymentsfees', [LoanController::class, 'loansrepaymentsfees'])->name('loansrepaymentsfees');
+    Route::post('/storeloanrepaymentfee', [LoanController::class, 'storeloanrepaymentfee'])->name('storeloanrepaymentfee');
+    Route::get('/editloanrepaymentfee/{id}', [LoanController::class, 'editloanrepaymentfee'])->name('editloanrepaymentfee');
+    Route::post('/updateloanrepaymentfee/{id}', [LoanController::class, 'updateloanrepaymentfee'])->name('updateloanrepaymentfee');
+    Route::get('/viewloanrepaymentfee/{id}', [LoanController::class, 'viewloanrepaymentfee'])->name('viewloanrepaymentfee');
+    Route::get('/destroyloanrepaymentfee/{id}', [LoanController::class, 'destroyloanrepaymentfee'])->name('destroyloanrepaymentfee');
+    Route::get('/downloadloanrepaymenttemplatefee', [LoanController::class, 'downloadloanrepaymenttemplatefee'])->name('downloadloanrepaymenttemplatefee');
+    Route::post('/importloanrepaymentsfee', [LoanController::class, 'importloanrepaymentsfee'])->name('importloanrepaymentsfee');
+
+
+    Route::get('/guarantors', [LoanController::class, 'guarantors'])->name('guarantors');
+    Route::post('/storeguarantor', [LoanController::class, 'storeguarantor'])->name('storeguarantor');
+    Route::get('/editguarantor/{id}', [LoanController::class, 'editguarantor'])->name('editguarantor');
+    Route::post('/updateguarantor/{id}', [LoanController::class, 'updateguarantor'])->name('updateguarantor');
+    Route::get('/viewguarantor/{id}', [LoanController::class, 'viewguarantor'])->name('viewguarantor');
+    Route::get('/destroyguarantor/{id}', [LoanController::class, 'destroyguarantor'])->name('destroyguarantor');
+
+    Route::get('/loanguarantors', [LoanController::class, 'loanguarantors'])->name('loanguarantors');
+    Route::post('/storeloanguarantor', [LoanController::class, 'storeloanguarantor'])->name('storeloanguarantor');
+    Route::get('/editloanguarantor/{id}', [LoanController::class, 'editloanguarantor'])->name('editloanguarantor');
+    Route::post('/updateloanguarantor/{id}', [LoanController::class, 'updateloanguarantor'])->name('updateloanguarantor');
+    Route::get('/viewloanguarantor/{id}', [LoanController::class, 'viewloanguarantor'])->name('viewloanguarantor');
+    Route::get('/destroyloanguarantor/{id}', [LoanController::class, 'destroyloanguarantor'])->name('destroyloanguarantor');
+
+    Route::get('/loanpenalties', [LoanController::class, 'loanpenalties'])->name('loanpenalties');
+    Route::post('/storeloanpenalty', [LoanController::class, 'storeloanpenalty'])->name('storeloanpenalty');
+    Route::get('/editloanpenalty/{id}', [LoanController::class, 'editloanpenalty'])->name('editloanpenalty');
+    Route::post('/updateloanpenalty/{id}', [LoanController::class, 'updateloanpenalty'])->name('updateloanpenalty');
+    Route::get('/viewloanpenalty/{id}', [LoanController::class, 'viewloanpenalty'])->name('viewloanpenalty');
+    Route::get('/destroyloanpenalty/{id}', [LoanController::class, 'destroyloanpenalty'])->name('destroyloanpenalty');
+    Route::get('/payloanpenalty/{id}', [LoanController::class, 'payloanpenalty'])->name('payloanpenalty');
 });
 
 
@@ -181,7 +287,7 @@ Route::delete('/group_members/{member}', [GroupMemberController::class, 'destroy
 Route::middleware(['auth'])->group(function () {
 Route::resource('clients', ClientController::class);
 Route::get('/clients/{client}/export', [ClientController::class, 'export'])->name('clients.export');
-Route::resource('guarantors', App\Http\Controllers\Client\ClientGuarantorController::class);
+
 });
 
 

@@ -21,6 +21,10 @@ class NextOfKin extends Model
         'address',
         'other_informations',
         'relationship',
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     // Relationship
@@ -28,6 +32,9 @@ class NextOfKin extends Model
     {
         return $this->belongsTo(Employee::class);
     }
-
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'User_id');
+    }
 
 }

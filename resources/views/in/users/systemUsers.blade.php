@@ -14,13 +14,13 @@
             <table class="arbif-table" id="countryTable">
                 <thead class="table-light">
                     <tr>
-                        <th>#</th>
-                        <th>User Name</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <!-- <th>Role</th> -->
-                        <!-- <th>Status</th> -->
+                        <th class="sortable">#</th>
+                        <th class="sortable">User Name</th>
+                        <th class="sortable">Name</th>
+                        <th class="sortable">Email</th>
+                        <th class="sortable">Phone</th>
+                        <!-- <th class="sortable">Role</th> -->
+                        <!-- <th class="sortable">Status</th> -->
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>

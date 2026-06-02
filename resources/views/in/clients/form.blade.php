@@ -10,19 +10,19 @@
             <div class="card-body">
                 <div class="row g-3">
 
-<div class="col-md-4">
-    <label for="group_id" class="form-label">Client Group</label>
-    <select id="group_id" name="group_id" class="form-select @error('group_id') is-invalid @enderror">
-        <option value="">-- Select Group --</option>
-        @foreach($centres as $centre)
-            <option value="{{ $centre->id }}"
-                {{ (old('group_id', $selectedGroupId ?? ($client->group_id ?? '')) == $centre->id) ? 'selected' : '' }}>
-                {{ $centre->group_name }} ({{ $centre->group_code }})
-            </option>
-        @endforeach
-    </select>
-    @error('group_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-</div>
+            <div class="col-md-4">
+                <label for="group_id" class="form-label">Client Group</label>
+                <select id="group_id" name="group_id" class="form-select @error('group_id') is-invalid @enderror">
+                    <option value="">-- Select Group --</option>
+                    @foreach($centres as $centre)
+                        <option value="{{ $centre->id }}"
+                            {{ (old('group_id', $selectedGroupId ?? ($client->group_id ?? '')) == $centre->id) ? 'selected' : '' }}>
+                            {{ $centre->group_name }} ({{ $centre->group_code }})
+                        </option>
+                    @endforeach
+                </select>
+                @error('group_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
 
                     
                     <div class="col-md-4">

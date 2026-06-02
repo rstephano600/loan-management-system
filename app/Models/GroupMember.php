@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class GroupMember extends Model
 {
     use HasFactory;
+    protected $table = 'group_members';
 
     protected $fillable = [
         'group_id',
@@ -17,6 +18,11 @@ class GroupMember extends Model
         'role_in_group',
         'created_by',
         'updated_by',
+
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     public function group()

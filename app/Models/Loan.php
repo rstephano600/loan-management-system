@@ -41,6 +41,7 @@ class Loan extends Model
         // Interest and Terms
         'interest_rate',
         'interest_amount',
+
         'repayment_frequency',
         'max_term_days',
         'max_term_months',
@@ -81,16 +82,24 @@ class Loan extends Model
         'total_amount_paid',
         'outstanding_balance',
         'total_profit',
-        'status',
 
         // system fields
         'currency',
+        'ApprovalStatus',
+        'CloseStatus',
+        'RejectReasons',
+        'RefundStatus',
         'created_by',
         'approved_at',
         'approved_by',
         'updated_by',
         'is_active',
         'is_new_client',
+
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     /**
@@ -133,7 +142,7 @@ class Loan extends Model
     // 🔗 Client who took the loan
     public function client()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class, 'client_id');
     }
 
     // 🔗 Loan category (product)
@@ -158,9 +167,13 @@ class Loan extends Model
     }
 
     // 🔗 Creator / approver users
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'User_id');
+    }
     public function creator()
     {
-        return $this->belongsTo(Employee::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function approver()
@@ -178,23 +191,30 @@ class Loan extends Model
     }
 
     public function createdBy()
-{
-    return $this->belongsTo(User::class, 'created_by');
-}
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
-public function approvedBy()
-{
-    return $this->belongsTo(User::class, 'approved_by');
-}
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 
-public function updatedBy()
-{
-    return $this->belongsTo(User::class, 'updated_by');
-}
-public function refundeddBy()
-{
-    return $this->belongsTo(User::class, 'refunded_by');
-}
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+    public function refundeddBy()
+    {
+        return $this->belongsTo(User::class, 'refunded_by');
+    }
+    public function penalties()
+    {
+        return $this->hasMany(
+            LoanPenalty::class,
+            'loan_id'
+        );
+    }
 
     /**
      * 🔢 Accessors & Calculations

@@ -40,8 +40,8 @@
                     <thead>
                         <tr>
                             <th style="width: 50px;">Select</th>
-                            <th>Permission Name</th>
-                            <th>Current Status</th>
+                            <th class="sortable">Permission Name</th>
+                            <th class="sortable">Current Status</th>
                         </tr>
                     </thead>
                     <tbody>

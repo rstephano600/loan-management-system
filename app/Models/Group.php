@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Group extends Model
 {
     use HasFactory;
+    protected $table = 'groups';
 
     protected $fillable = [
         'group_center_id',
@@ -21,6 +22,11 @@ class Group extends Model
         'is_active',
         'created_by',
         'updated_by',
+
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
         protected $casts = [

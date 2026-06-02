@@ -39,7 +39,7 @@ class UserController extends Controller
 
     public function storesystemUsers(Request $request)
     {
-        // try{
+        try{
             $validated = $request->validate([
                 'FirstName' => 'required|string|max:50',
                 'MiddleName' => 'nullable|string|max:50',
@@ -68,10 +68,10 @@ class UserController extends Controller
 
             Alert::success('Success ' . ' ' . Auth()->user()->name, 'You\'ve Registered User ' . $name . ' created successfully.');
             return back();
-        // } catch (\Throwable $th) {
-        //     Alert::error('Sorry! '   . ' ' .  Auth()->user()->name, 'Technical error exists, please contact Technichal for support Tel:+255657856790');
-        //     return back();
-        // }
+        } catch (\Throwable $th) {
+            Alert::error('Sorry! '   . ' ' .  Auth()->user()->name, 'Technical error exists, please contact Technichal for support Tel:+255657856790');
+            return back();
+        }
     }
 
     public function editsystemUsers($id)

@@ -31,6 +31,11 @@ class LoanCategory extends Model
         'is_new_client',
         'created_by',
         'updated_by',
+
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     protected $casts = [
@@ -43,9 +48,6 @@ class LoanCategory extends Model
         'is_new_client' => 'boolean',
     ];
 
-    /**
-     * Accessors for virtual columns (repayable_amount, total_due)
-     */
     protected $appends = ['repayable_amount', 'total_due'];
 
     public function getRepayableAmountAttribute()
@@ -58,9 +60,12 @@ class LoanCategory extends Model
         return ($this->principal_due ?? 0) + ($this->interest_due ?? 0);
     }
 
-    /**
-     * Relationships (optional, depending on your setup)
-     */
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'User_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(Employee::class, 'created_by');

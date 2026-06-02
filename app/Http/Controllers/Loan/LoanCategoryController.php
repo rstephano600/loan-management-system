@@ -54,59 +54,56 @@ class LoanCategoryController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'nullable|string|max:255',
-        'amount_disbursed' => 'required|numeric|min:0',
-        'principal_due' => 'required|numeric|min:0',
-        'insurance_fee' => 'nullable|numeric|min:0',
-        'officer_visit_fee' => 'nullable|numeric|min:0',
-        'interest_rate' => 'nullable|numeric|min:0|max:100',
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'amount_disbursed' => 'required|numeric|min:0',
+            'principal_due' => 'required|numeric|min:0',
+            'insurance_fee' => 'nullable|numeric|min:0',
+            'officer_visit_fee' => 'nullable|numeric|min:0',
+            'interest_rate' => 'nullable|numeric|min:0|max:100',
 
-        'repayment_frequency' => 'required|in:daily,weekly,bi_weekly,monthly,quarterly',
-        'max_term_days' => 'nullable|integer|min:0',
-        'max_term_months' => 'nullable|integer|min:0',
+            'repayment_frequency' => 'required|in:daily,weekly,bi_weekly,monthly,quarterly',
+            'max_term_days' => 'nullable|integer|min:0',
+            'max_term_months' => 'nullable|integer|min:0',
 
-        'currency' => 'nullable|string|max:10',
-        'conditions' => 'nullable|string',
-        'descriptions' => 'nullable|string',
-        'is_active' => 'boolean',
-        'is_new_client' => 'boolean',
-    ]);
+            'currency' => 'nullable|string|max:10',
+            'conditions' => 'nullable|string',
+            'descriptions' => 'nullable|string',
+            'is_active' => 'boolean',
+            'is_new_client' => 'boolean',
+        ]);
 
-    // ✅ Retrieve actual numeric values from the request
-    $amount_disbursed = (float) $request->input('amount_disbursed');
-    $interest_rate = (float) $request->input('interest_rate', 20); // default 20 if null
-    $principal_due = (float) $request->input('principal_due');
+        // ✅ Retrieve actual numeric values from the request
+        $amount_disbursed = (float) $request->input('amount_disbursed');
+        $interest_rate = (float) $request->input('interest_rate', 20); // default 20 if null
+        $principal_due = (float) $request->input('principal_due');
 
-    // ✅ Calculate interest and dues safely
-    $interest = ($amount_disbursed * $interest_rate) / 100;
+        // ✅ Calculate interest and dues safely
+        $interest = ($amount_disbursed * $interest_rate) / 100;
+        $repayableAmount = $interest + $amount_disbursed;
 
-    $repayableAmount = $interest + $amount_disbursed;
+        // Avoid division by zero
+        if ($principal_due > 0) {
+            $totalDaysDue = $repayableAmount / $principal_due;
+            $interestDue = ($principal_due * $interest_rate) / 100;
+        } else {
+            $totalDaysDue = 0;
+            $interestDue = 0;
+        }
 
-    // Avoid division by zero
-    if ($principal_due > 0) {
-        $totalDaysDue = $repayableAmount / $principal_due;
-        $interestDue = ($principal_due * $interest_rate) / 100;
-    } else {
-        $totalDaysDue = 0;
-        $interestDue = 0;
+        // ✅ Add calculated values
+        $validated['interest_amount'] = $interest;
+        $validated['total_days_due'] = $totalDaysDue;
+        $validated['interest_due'] = $interestDue;
+        $validated['created_by'] = Auth::id();
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_new_client'] = $request->boolean('is_new_client', true);
+
+        LoanCategory::create($validated);
+        return redirect()->route('loan_categories.index')->with('success', 'Loan category created successfully.');
+            
     }
-
-    // ✅ Add calculated values
-    $validated['interest_amount'] = $interest;
-    $validated['total_days_due'] = $totalDaysDue;
-    $validated['interest_due'] = $interestDue;
-    $validated['created_by'] = Auth::id();
-    $validated['is_active'] = $request->boolean('is_active', true);
-    $validated['is_new_client'] = $request->boolean('is_new_client', true);
-
-    LoanCategory::create($validated);
-
-    return redirect()
-        ->route('loan_categories.index')
-        ->with('success', 'Loan category created successfully.');
-}
 
     /**
      * Display the specified resource.
@@ -148,31 +145,31 @@ class LoanCategoryController extends Controller
             'is_new_client' => 'boolean',
         ]);
 
-           // ✅ Retrieve actual numeric values from the request
-    $amount_disbursed = (float) $request->input('amount_disbursed');
-    $interest_rate = (float) $request->input('interest_rate', 20); // default 20 if null
-    $principal_due = (float) $request->input('principal_due');
+        // ✅ Retrieve actual numeric values from the request
+        $amount_disbursed = (float) $request->input('amount_disbursed');
+        $interest_rate = (float) $request->input('interest_rate', 20); // default 20 if null
+        $principal_due = (float) $request->input('principal_due');
 
-    // ✅ Calculate interest and dues safely
-    $interest = ($amount_disbursed * $interest_rate) / 100;
+        // ✅ Calculate interest and dues safely
+        $interest = ($amount_disbursed * $interest_rate) / 100;
 
-    $repayableAmount = $interest + $amount_disbursed;
+        $repayableAmount = $interest + $amount_disbursed;
 
-    // Avoid division by zero
-    if ($principal_due > 0) {
-        $totalDaysDue = $repayableAmount / $principal_due;
-        $interestDue = ($principal_due * $interest_rate) / 100;
-    } else {
-        $totalDaysDue = 0;
-        $interestDue = 0;
-    }
+        // Avoid division by zero
+        if ($principal_due > 0) {
+            $totalDaysDue = $repayableAmount / $principal_due;
+            $interestDue = ($principal_due * $interest_rate) / 100;
+        } else {
+            $totalDaysDue = 0;
+            $interestDue = 0;
+        }
 
-    // ✅ Add calculated values
-    $validated['interest_amount'] = $interest;
-    $validated['total_days_due'] = $totalDaysDue;
-    $validated['interest_due'] = $interestDue;
-    $validated['updated_by'] = Auth::id();
-    
+        // ✅ Add calculated values
+        $validated['interest_amount'] = $interest;
+        $validated['total_days_due'] = $totalDaysDue;
+        $validated['interest_due'] = $interestDue;
+        $validated['updated_by'] = Auth::id();
+
         $loanCategory->update($validated);
 
         return redirect()

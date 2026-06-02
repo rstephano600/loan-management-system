@@ -462,9 +462,83 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-    </script>
+   
     
-    @stack('scripts')
+
+    // resources/js/searchable-select.js  (or paste in your main layout before </body>)
+
+function initSearchableSelects() {
+    document.querySelectorAll('select[data-searchable]').forEach(select => {
+
+        const name        = select.name;
+        const placeholder = select.dataset.placeholder || 'Search...';
+        const options     = Array.from(select.options).filter(o => o.value !== '');
+
+        // Build replacement HTML
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('searchable-select-wrapper');
+        wrapper.style.position = 'relative';
+
+        wrapper.innerHTML = `
+            <input type="hidden" name="${name}">
+            <input type="text"
+                   class="form-control searchable-input"
+                   placeholder="${placeholder}"
+                   autocomplete="off">
+            <ul class="searchable-dropdown">
+                ${options.map(o => `
+                    <li data-value="${o.value}" data-label="${o.text}">
+                        ${o.text}
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+
+        // Replace original select
+        select.replaceWith(wrapper);
+
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+        const searchInput = wrapper.querySelector('.searchable-input');
+        const dropdown    = wrapper.querySelector('.searchable-dropdown');
+        const items       = Array.from(dropdown.querySelectorAll('li'));
+
+        // Set existing selected value if any
+        const selected = options.find(o => o.selected);
+        if (selected) {
+            searchInput.value = selected.text;
+            hiddenInput.value = selected.value;
+        }
+
+        searchInput.addEventListener('focus', () => dropdown.classList.add('open'));
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.toLowerCase();
+            items.forEach(item => {
+                item.style.display = item.dataset.label.toLowerCase().includes(q) ? '' : 'none';
+            });
+            hiddenInput.value = '';
+            dropdown.classList.add('open');
+        });
+
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                searchInput.value = item.dataset.label;
+                hiddenInput.value = item.dataset.value;
+                dropdown.classList.remove('open');
+            });
+        });
+
+        document.addEventListener('click', e => {
+            if (!wrapper.contains(e.target)) dropdown.classList.remove('open');
+        });
+    });
+}
+
+// Auto-run on page load
+document.addEventListener('DOMContentLoaded', initSearchableSelects);
+
+
+     </script>
 </body>
 </html>
 

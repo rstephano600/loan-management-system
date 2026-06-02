@@ -71,6 +71,9 @@ class User extends Authenticatable
         'User_id',
         'Dob',
         'gender',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     /**

@@ -77,7 +77,7 @@
                     </span>
                     <span style="font-size:10px;color:#94a3b8;">
                         @php
-                            $role = Auth::user()->role ?? '';
+                            $role = Auth::user()->Role ?? '';
                         @endphp
                         {{ ucfirst(str_replace('_', ' ', $role)) ?: 'Staff' }}
                     </span>
@@ -1469,6 +1469,79 @@
     };
 
 })();
+
+
+// resources/js/searchable-select.js  (or paste in your main layout before </body>)
+
+function initSearchableSelects() {
+    document.querySelectorAll('select[data-searchable]').forEach(select => {
+
+        const name        = select.name;
+        const placeholder = select.dataset.placeholder || 'Search...';
+        const options     = Array.from(select.options).filter(o => o.value !== '');
+
+        // Build replacement HTML
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('searchable-select-wrapper');
+        wrapper.style.position = 'relative';
+
+        wrapper.innerHTML = `
+            <input type="hidden" name="${name}">
+            <input type="text"
+                   class="form-control searchable-input"
+                   placeholder="${placeholder}"
+                   autocomplete="off">
+            <ul class="searchable-dropdown">
+                ${options.map(o => `
+                    <li data-value="${o.value}" data-label="${o.text}">
+                        ${o.text}
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+
+        // Replace original select
+        select.replaceWith(wrapper);
+
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+        const searchInput = wrapper.querySelector('.searchable-input');
+        const dropdown    = wrapper.querySelector('.searchable-dropdown');
+        const items       = Array.from(dropdown.querySelectorAll('li'));
+
+        // Set existing selected value if any
+        const selected = options.find(o => o.selected);
+        if (selected) {
+            searchInput.value = selected.text;
+            hiddenInput.value = selected.value;
+        }
+
+        searchInput.addEventListener('focus', () => dropdown.classList.add('open'));
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.toLowerCase();
+            items.forEach(item => {
+                item.style.display = item.dataset.label.toLowerCase().includes(q) ? '' : 'none';
+            });
+            hiddenInput.value = '';
+            dropdown.classList.add('open');
+        });
+
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                searchInput.value = item.dataset.label;
+                hiddenInput.value = item.dataset.value;
+                dropdown.classList.remove('open');
+            });
+        });
+
+        document.addEventListener('click', e => {
+            if (!wrapper.contains(e.target)) dropdown.classList.remove('open');
+        });
+    });
+}
+
+// Auto-run on page load
+document.addEventListener('DOMContentLoaded', initSearchableSelects);
 </script>
 
 {{-- ══════════════════════════════════════════
@@ -1616,6 +1689,45 @@
     .arbif-toolbar-left, .arbif-toolbar-right { justify-content: flex-start; }
     .arbif-search-wrap { max-width: 100%; min-width: unset; }
 }
+
+
+
+/* resources/css/searchable-select.css */
+
+.searchable-select-wrapper {
+    position: relative;
+}
+
+.searchable-dropdown {
+    display: none;
+    position: absolute;
+    z-index: 999;
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.searchable-dropdown.open {
+    display: block;
+}
+
+.searchable-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.searchable-dropdown li:hover {
+    background: #f0f0f0;
+}
 </style>
+
 @include('layouts.partials.flash-alerts')
 @include('layouts.partials.flash-alertesuccess')

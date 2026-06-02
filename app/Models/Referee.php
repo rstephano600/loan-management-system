@@ -21,13 +21,21 @@ class Referee extends Model
         'address',
         'other_informations',
         'occupation',
-
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     // Relationship
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'User_id');
     }
 
 }

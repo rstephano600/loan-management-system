@@ -12,6 +12,7 @@ class Employee extends Model
 
     protected $fillable = [
         'Employee_id',
+        'EmployeeID',
         'user_id',
         'date_of_birth',
         'marital_status',
@@ -30,6 +31,11 @@ class Employee extends Model
         'created_by',
         'updated_by',
         'basic_salary',
+
+        'User_id',
+        'Status',
+        'AuditingStatus',
+        'ReportStatus'
     ];
 
     protected $casts = [
@@ -41,9 +47,12 @@ class Employee extends Model
     // Relationships
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'User_id');
     }
-
+    public function employee()
+    {
+        return $this->belongsTo(User::class, 'Employee_id');
+    }
      public function clients()
     {
         return $this->hasMany(Client::class);

@@ -57,6 +57,126 @@
             <div class="ps-4 mt-2">
                 @can('register-employees')
                 <a href="{{ route('employeeinfo') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Company Employees</span></a>
+                <a href="#" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Innactive Employees</span></a>
+                <a href="#" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Employee Referees</span></a>
+                <a href="#" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Employee Nest Of Kin</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-group-centers-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu1" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Group Centers Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu1">
+            <div class="ps-4 mt-2">
+                @can('view-group-centers')
+                <a href="{{ route('groupCenter') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Group Centers</span></a>
+                <a href="{{ route('innactivegroupCenter') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Innactive Group Centers</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-groups-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu2" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Loan Groups Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu2">
+            <div class="ps-4 mt-2">
+                @can('view-loan-groups')
+                <a href="{{ route('centerGroups') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Loan Groups</span></a>
+                <a href="{{ route('innactivecenterGroups') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Innactive Loan Groups</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-beneficiary-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu3" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Loan Beneficiary Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu3">
+            <div class="ps-4 mt-2">
+                @can('view-loan-beneficiary')
+                <a href="{{ route('clientinformations') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>client informations</span></a>
+                <a href="{{ route('groupMembers') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Beneficiary Groups</span></a>
+                <a href="{{ route('innactivegroupMembers') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Innactive Loan Beneficiary</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu4" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Loans Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu4">
+            <div class="ps-4 mt-2">
+                @can('view-loan')
+                <a href="{{ route('loansinformations') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Loans Informations</span></a>
+                <a href="{{ route('closedloansinformations') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Closed Loans </span></a>
+                <a href="{{ route('refundedloansinformations') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Refunded Loans </span></a>
+                <a href="{{ route('rejectedloansinformations') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Rejected Loans </span></a>
+                @endcan
+                @can('approve-loans')
+                <a href="{{ route('approveloansinformations') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Approve Loans</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-categories-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu5" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Loan Category Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu5">
+            <div class="ps-4 mt-2">
+                @can('view-loan-categories')
+                <a href="{{ route('loancategories') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Loan Categories</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-repayments-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu7" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Loans Repayments Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu7">
+            <div class="ps-4 mt-2">
+                @can('view-loan-repayments')
+                <a href="{{ route('loansrepayments') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Loans Repayments</span></a>
+                <a href="{{ route('loansrepaymentsfees') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Fees Repayments</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-penalty-categories-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu6" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Loan Penalities  Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu6">
+            <div class="ps-4 mt-2">
+                @can('view-loan-penalty-categories')
+                <a href="{{ route('loanpenalties') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Loan Penalties</span></a>
+                <a href="{{ route('loanpenaltycategories') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Penalty Categories</span></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endcan
+    @can('view-loan-guarantors-menu')
+    <div class="nav-item">
+        <a href="#accountingSubmenu8" class="nav-link" data-bs-toggle="collapse" role="button"><i class="fas fa-book me-2"></i> 
+        <span>Guarantors Menu</span><i class="fas fa-chevron-down ms-auto"></i></a>
+        <div class="collapse" id="accountingSubmenu8">
+            <div class="ps-4 mt-2">
+                @can('view-loan-guarantors')
+                <a href="{{ route('guarantors') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Client Guarantors</span></a>
+                <a href="{{ route('loanguarantors') }}" class="nav-link d-flex align-items-center"><i class="fas fa-building me-2"></i> <span>Loan Guarantors</span></a>
                 @endcan
             </div>
         </div>

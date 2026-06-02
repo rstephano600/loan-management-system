@@ -59,7 +59,7 @@ class EmployeeController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
             'cv' => 'nullable|mimes:pdf,doc,docx|max:5120',
             'other_information' => 'nullable|string',
-            'EmployeeID' => 'nullable|string',
+            'EmployeeID' => 'nullable|string|unique:employees,EmployeeID',
             'basic_salary' => 'nullable|string',
             
             // Next of Kin
@@ -95,7 +95,9 @@ class EmployeeController extends Controller
         $month     = date('Y');
         $name = $validated['LastName'] . ',' . ' ' . $validated['FirstName'] . ' ' .  $validated['MiddleName'];
         $FName = strtoupper(substr($validated['FirstName'], 0,1));
-        $MName = strtoupper(substr($validated['MiddleName'], 0,1));
+        $MName = !empty($validated['MiddleName']) 
+                ? strtoupper(substr($validated['MiddleName'], 0, 1)) 
+                : '';
         $LName = strtoupper(substr($validated['LastName'], 0,1));
         $Name = $FName.$MName.$LName;
         $username = 'ArBif/'. $Name . '/' . $month. '/00' . $no;
@@ -113,7 +115,7 @@ class EmployeeController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'password' => Hash::make('AiBif123456'),
-                'role' => $validated['role'],
+                'Role' => $validated['Role'],
                 'User_id' => auth()->id(),
             ]);
 
@@ -129,7 +131,7 @@ class EmployeeController extends Controller
             // Create Employee
             $employee = Employee::create([
                 'Employee_id' => $user->id,
-                'EmployeeID' => $user->id,
+                'EmployeeID' => $validated['EmployeeID'],
                 'user_id' => auth()->id(),
                 'marital_status' => $validated['marital_status'],
                 'nida' => $validated['nida'],
@@ -145,6 +147,7 @@ class EmployeeController extends Controller
                 'cv' => $cvPath,
                 'other_information' => $validated['other_information'],
                 'created_by' => auth()->id(),
+                'User_id' => auth()->id(),
             ]);
 
             // Create Next of Kin if provided
@@ -183,6 +186,8 @@ class EmployeeController extends Controller
             return back();
         } catch (\Throwable $th) {
             DB::rollBack();
+
+            dd($th->getMessage());
             if ($profilePicturePath) {
                 Storage::disk('public')->delete($profilePicturePath);
             }

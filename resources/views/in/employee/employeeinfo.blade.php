@@ -26,7 +26,7 @@
                         <th class="sortable">Full Name</th>
                         <th class="sortable">Email</th>
                         <th class="sortable">Phone</th>
-                        <th class="sortable">Role</th>
+                        <!-- <th class="sortable">Role</th> -->
                         <th class="sortable">Department</th>
                         <th class="sortable">Status</th>
                         <th>Actions</th>
@@ -55,15 +55,15 @@
                         </td>
 
                         <td>
-                            {{ $item->FirstName ?? '' }}
-                            {{ $item->MiddleName ?? '' }}
-                            {{ $item->LastName ?? '' }}
+                            {{ $item->employee->FirstName ?? '' }}
+                            {{ $item->employee->MiddleName ?? '' }}
+                            {{ $item->employee->LastName ?? '' }}
                         </td>
 
-                        <td>{{ $item->email ?? '—' }}</td>
-                        <td>{{ $item->PhoneNumber ?? '—' }}</td>
-                        <td>{{ $item->role ?? '—' }}</td>
-                        <td>{{ $item->Department ?? '—' }}</td>
+                        <td>{{ $item->employee->email ?? '—' }}</td>
+                        <td>{{ $item->employee->phone ?? '—' }}</td>
+                        <!-- <td>{{ $item->employee->Role ?? '—' }}</td> -->
+                        <td>{{ $item->department ?? '—' }}</td>
 
                         <td>
                             @if($item->is_active == 1)
@@ -155,6 +155,38 @@
                                    class="form-control"
                                    placeholder="Enter phone number"
                                    required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Trible</label>
+                            <input type="text"
+                                   name="tribe"
+                                   class="form-control"
+                                   placeholder="tribe">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Religion</label>
+                            <input type="text"
+                                   name="religion"
+                                   class="form-control"
+                                   placeholder="religion">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Education Level</label>
+                            <input type="text"
+                                   name="education_level"
+                                   class="form-control"
+                                   placeholder="education level">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Other Information</label>
+                            <input type="text"
+                                   name="other_information"
+                                   class="form-control"
+                                   placeholder="other information">
                         </div>
 
 
@@ -315,6 +347,14 @@
                         </div>
 
                         <div class="col-md-4">
+                            <label class="form-label">Kin Email</label>
+                            <input type="email"
+                                   name="nok_email"
+                                   class="form-control"
+                                   placeholder="Enter Kin email">
+                        </div>
+
+                        <div class="col-md-4">
                             <label class="form-label">Kin Phone Number</label>
                             <input type="text"
                                    name="nok_phone"
@@ -331,7 +371,15 @@
                             </select>
                         </div>
 
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label class="form-label">other informations</label>
+                            <textarea name="nok_other_informations"
+                                      rows="2"
+                                      class="form-control"
+                                      placeholder="Enter Other info"></textarea>
+                        </div>
+
+                        <div class="col-md-6">
                             <label class="form-label">Kin Address</label>
                             <textarea name="nok_address"
                                       rows="2"
@@ -344,14 +392,14 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Referee Name</label>
+                            <label class="form-label">Referee First Name</label>
                             <input type="text"
                                    name="ref1_first_name"
                                    class="form-control"
                                    placeholder="Enter referee name">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Referee Name</label>
+                            <label class="form-label">Referee Last Name</label>
                             <input type="text"
                                    name="ref1_last_name"
                                    class="form-control"
@@ -365,6 +413,14 @@
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Referee Email</label>
+                            <input type="email"
+                                   name="ref1_email"
+                                   class="form-control"
+                                   placeholder="Enter Email">
                         </div>
 
                         <div class="col-md-4">
@@ -383,7 +439,15 @@
                                    placeholder="Enter occupation">
                         </div>
 
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label class="form-label">other informations</label>
+                            <textarea name="ref1_other_informations"
+                                      rows="2"
+                                      class="form-control"
+                                      placeholder="Enter  Other infoo"></textarea>
+                        </div>
+
+                        <div class="col-md-6">
                             <label class="form-label">Referee Address</label>
                             <textarea name="ref1_address"
                                       rows="2"

@@ -101,6 +101,17 @@ class AccountingController extends Controller
         }
     }
 
+    public function deletedaccountCountry()
+    {
+        try{
+        $data = AccountCountry::where('Status', 'Deleted')->get();
+        return view('in.accounting.deletedaccountCountry', compact('data'));
+        } catch (\Throwable $th) {
+            Alert::error('Sorry! '   . ' ' .  Auth()->user()->name, 'Technical error exists, please contact Technichal for support Tel:+255657856790');
+            return back();
+        }
+    }
+
     public function accountBusiness()
     {
         try{
